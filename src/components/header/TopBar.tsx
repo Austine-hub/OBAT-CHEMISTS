@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, ShoppingCart, Heart, User, MapPin, Truck, Package, Home, X, Menu } from 'lucide-react';
 import styles from './TopBar.module.css';
 
@@ -21,10 +22,33 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
     <>
       <header className={styles.topbar}>
         <div className={styles.container}>
-          <Link href="/" className={styles.logo} aria-label="Home">
-            <Home size={28} />
+
+                  {/* ==== NEW LOGO SECTION ==== */}
+        <div className={styles.brandWrapper}>
+          <Link
+            href="/"
+            className={styles.brandSection}
+            aria-label="Go to OBAT Chemists homepage"
+          >
+            <Image
+              src="/logo.png"
+              alt="OBAT Chemists Logo"
+              width={60}
+              height={50}
+              className={styles.brandLogo}
+              priority
+            />
+            <span className={styles.brandName}>OBAT Chemists</span>
           </Link>
 
+          {/* Home Icon below brand name */}
+          <Link href="/" className={styles.homeIcon} aria-label="Home">
+            <Home size={18} />
+          </Link>
+        </div>
+
+
+          {/* ==== DELIVERY BUTTON ==== */}
           <button 
             className={styles.deliveryBtn}
             onClick={toggleDelivery}
@@ -38,6 +62,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
             </div>
           </button>
 
+          {/* ==== SEARCH BAR ==== */}
           <div className={styles.searchWrapper}>
             <input 
               type="search"
@@ -50,6 +75,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
             </button>
           </div>
 
+          {/* ==== ACTION BUTTONS ==== */}
           <nav className={styles.actions} aria-label="Main navigation">
             <Link href="/reorder" className={styles.actionLink} aria-label="Reorder items">
               <Heart size={24} />
@@ -78,6 +104,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
             </Link>
           </nav>
 
+          {/* ==== MOBILE MENU BUTTON ==== */}
           <button
             className={styles.mobileMenuBtn}
             onClick={onMobileToggle}
@@ -89,6 +116,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
         </div>
       </header>
 
+      {/* ==== DELIVERY MODAL (unchanged) ==== */}
       {showDelivery && (
         <div className={styles.deliveryModal} role="dialog" aria-modal="true" aria-labelledby="delivery-title">
           <div className={styles.modalOverlay} onClick={closeDelivery} aria-hidden="true" />
