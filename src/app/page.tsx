@@ -1,66 +1,88 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// app/page.tsx
+
+import type { Metadata } from "next";
+import Hero from "@/components/hero/Hero";
+import ServiceCards from "@/components/banner/PharmacyBanners";
+import PromoBanner from "@/components/banner/PharmacyPromo";
+import PharmacyFeatures from "@/components/banner/PharmacyFeatures";
+import GetStarted from "@/components/getstarted/GetStarted";
+import ProductGrid from "@/components/products/ProductsGrid";
+import PopularProducts from "@/components/products/PopularProducts";
+import ProductGrid2 from "@/components/products/ProductGrid2";
+
+export const metadata: Metadata = {
+  title: "Home — Ajanja Imperial Group",
+  description: "Pharmacy solutions — clean, accessible and fast.",
+};
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-white text-slate-900 antialiased">
+      {/* Accessible page heading for screen readers & SEO */}
+
+      
+      {/* Hero */}
+      <section aria-labelledby="hero-heading" className="w-full">
+        <Hero />
+      </section>
+
+       {/* Get Started */}
+      <section aria-labelledby="hero-heading" className="w-full">
+        <GetStarted />
+      </section>
+
+     {/*ProductGrid */}
+      <section aria-labelledby="ProductGrid" className="w-full">
+        <ProductGrid/>
+      </section>
+
+      {/* Promo Banner — visually distinct, keyboard focusable */}
+      <section
+        aria-label="Promotional offers"
+        className="w-full px-4 sm:px-6 lg:px-8 -mt-4"
+      >
+        <PromoBanner />
+      </section>
+    
+     {/* PPopularProducts*/}
+      <section
+        aria-label="PopularProducts"
+        className="w-full px-4 sm:px-6 lg:px-8 -mt-4"
+      >
+        <PopularProducts/>
+      </section>
+
+      {/* Services — responsive grid, keeps layout simple */}
+      <section
+        aria-labelledby="services-heading"
+        className="w-full px-4 sm:px-6 lg:px-8 py-10"
+      >
+        <div className="mx-auto max-w-7xl">
+           <ServiceCards />
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/*ProductGrid2*/}
+      <section
+        aria-labelledby="services-heading"
+        className="w-full px-4 sm:px-6 lg:px-8 py-10"
+      >
+        <div className="mx-auto max-w-7xl">
+           <ProductGrid2/>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Features — highlight trust, accessibility, performance */}
+      <section
+        aria-labelledby="features-heading"
+        className="w-full px-4 sm:px-6 lg:px-8 pb-16"
+      >
+        <div className="mx-auto max-w-7xl">
+          <PharmacyFeatures />
+        </div>
+      </section>
+
+
+    </main>
   );
 }

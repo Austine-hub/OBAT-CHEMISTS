@@ -1,0 +1,35 @@
+.container{max-width:1280px;margin:0 auto;padding:2rem 1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.card{display:flex;align-items:center;justify-content:space-between;padding:2.5rem;border-radius:12px;text-decoration:none;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);box-shadow:0 4px 6px rgba(0,0,0,.07);cursor:pointer}
+.card:hover{box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04)}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;transition:opacity .3s;pointer-events:none}
+.card:hover::before{opacity:1}
+.red{background:linear-gradient(135deg,#ff6b6b 0%,#ee5a6f 100%);color:#fff}
+.red::before{background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 100%)}
+.blue{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff;flex-direction:column;align-items:flex-start}
+.blue::before{background:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 100%)}
+.purple{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:2rem}
+.purple::before{background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 100%)}
+.icon{width:64px;height:64px;background:rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;transition:transform .3s}
+.card:hover .icon{transform:scale(1.1) rotate(5deg)}
+.icon svg{width:36px;height:36px}
+.title{font-size:1.5rem;font-weight:700;line-height:1.3;margin:0}
+.content{flex:1;z-index:1}
+.saleTitle{font-size:2.5rem;font-weight:700;font-style:italic;margin:0 0 .5rem;animation:pulse 2s infinite}
+.discount{font-size:1.75rem;font-weight:600;margin:.25rem 0}
+.subtitle{font-size:1rem;opacity:.9;margin:.25rem 0 1.5rem}
+.btn{background:#1e3a8a;color:#fff;border:none;padding:.75rem 2rem;border-radius:50px;font-weight:600;font-size:.875rem;cursor:pointer;transition:all .3s;letter-spacing:.5px}
+.btn:hover{background:#1e40af;transform:scale(1.05)}
+.img{width:280px;height:auto;border-radius:8px;margin-left:1rem;transition:transform .3s;object-fit:cover}
+.card:hover .img{transform:scale(1.05)}
+.badge{position:absolute;top:1rem;right:1rem;background:#fbbf24;color:#1f2937;padding:.5rem 1rem;border-radius:50px;font-weight:700;font-size:.875rem;text-align:center;line-height:1.2;box-shadow:0 4px 6px rgba(0,0,0,.1);z-index:2;animation:bounce 2s infinite}
+.promoContent{position:relative;z-index:1}
+.promoTitle{font-size:2.5rem;font-weight:700;margin:0 0 .25rem;text-shadow:2px 2px 4px rgba(0,0,0,.2)}
+.promoText{font-size:1.125rem;margin:0 0 1.5rem;opacity:.95}
+.shopBtn{background:#fbbf24;color:#1f2937;border:none;padding:.875rem 2.5rem;border-radius:50px;font-weight:700;font-size:.875rem;cursor:pointer;transition:all .3s;letter-spacing:.5px;box-shadow:0 4px 6px rgba(0,0,0,.1)}
+.shopBtn:hover{background:#f59e0b;transform:scale(1.05);box-shadow:0 6px 12px rgba(0,0,0,.15)}
+.productImg{position:absolute;right:1rem;bottom:1rem;width:180px;height:auto;border-radius:8px;transition:transform .3s;object-fit:contain;filter:drop-shadow(0 10px 15px rgba(0,0,0,.3))}
+.card:hover .productImg{transform:scale(1.08) rotate(-2deg)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(max-width:768px){.grid{grid-template-columns:1fr;gap:1rem}.card{padding:1.5rem}.img{width:180px}.productImg{width:140px}.saleTitle,.promoTitle{font-size:2rem}}

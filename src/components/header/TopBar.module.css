@@ -1,0 +1,501 @@
+/* ========================================
+   TOPBAR COMPONENT
+   ======================================== */
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #0071dc;
+  padding: 0.75rem 1rem;
+  z-index: 2000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ========================================
+   LOGO
+   ======================================== */
+
+.logo {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.logo:hover,
+.logo:focus-visible {
+  background: rgba(0, 0, 0, 0.15);
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   DELIVERY BUTTON
+   ======================================== */
+
+.deliveryBtn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 2rem;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.deliveryBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.deliveryBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.deliveryText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.deliveryTitle {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.deliveryLocation {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  line-height: 1.2;
+}
+
+/* ========================================
+   SEARCH
+   ======================================== */
+
+.searchWrapper {
+  flex: 1;
+  max-width: 600px;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 3.5rem 0.75rem 1rem;
+  border: none;
+  border-radius: 2rem;
+  font-size: 0.938rem;
+  outline: none;
+  transition: box-shadow 0.2s ease;
+}
+
+.searchInput:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.searchBtn {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ffc220;
+  border: none;
+  border-radius: 50%;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.searchBtn:hover {
+  background: #ffb800;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.searchBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ========================================
+   ACTIONS & NAVIGATION
+   ======================================== */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.actionLink,
+.cartLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 2rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.actionLink:hover,
+.actionLink:focus-visible,
+.cartLink:hover,
+.cartLink:focus-visible {
+  background: rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+.actionText {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.813rem;
+  line-height: 1.2;
+}
+
+.actionLabel {
+  font-weight: 400;
+}
+
+.actionSub {
+  font-weight: 600;
+}
+
+.cartLink {
+  position: relative;
+}
+
+.cartBadge {
+  position: absolute;
+  top: -0.25rem;
+  right: 2.5rem;
+  background: #ffc220;
+  color: #000;
+  border-radius: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.cartPrice {
+  font-weight: 600;
+  font-size: 0.938rem;
+}
+
+/* ========================================
+   MOBILE MENU BUTTON
+   ======================================== */
+
+.mobileMenuBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mobileMenuBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+
+.mobileMenuBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ========================================
+   DELIVERY MODAL
+   ======================================== */
+
+.deliveryModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 5rem;
+}
+
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  z-index: 3001;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: #f5f5f5;
+  color: #000;
+  transform: scale(1.1);
+}
+
+.closeBtn:focus-visible {
+  outline: 2px solid #0071dc;
+  outline-offset: 2px;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #000;
+}
+
+.deliveryOptions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.optionBtn {
+  background: #f5f5f5;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  padding: 1rem 0.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #0071dc;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.optionBtn:hover {
+  background: rgba(0, 113, 220, 0.1);
+  border-color: #0071dc;
+  transform: translateY(-2px);
+}
+
+.optionBtn:focus-visible {
+  outline: 2px solid #0071dc;
+  outline-offset: 2px;
+}
+
+.addressSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  color: #0071dc;
+}
+
+.addressInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.addressLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #000;
+}
+
+.addressValue {
+  font-size: 0.813rem;
+  color: #666;
+}
+
+.updateBtn {
+  width: 100%;
+  background: #0071dc;
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.875rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.updateBtn:hover {
+  background: #005bb5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 113, 220, 0.3);
+}
+
+.updateBtn:focus-visible {
+  outline: 2px solid #0071dc;
+  outline-offset: 2px;
+}
+
+/* ========================================
+   TABLET RESPONSIVE
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .container {
+    gap: 0.75rem;
+  }
+  .deliveryLocation {
+    display: none;
+  }
+  .actionText {
+    display: none;
+  }
+  .cartPrice {
+    display: none;
+  }
+  .cartBadge {
+    right: 0.5rem;
+  }
+  .searchWrapper {
+    max-width: 400px;
+  }
+}
+
+/* ========================================
+   MOBILE RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0.625rem 0.75rem;
+  }
+  .container {
+    gap: 0.5rem;
+  }
+  .logo {
+    order: 1;
+  }
+  .mobileMenuBtn {
+    display: flex;
+    order: 2;
+    margin-left: auto;
+  }
+  .deliveryBtn,
+  .searchWrapper,
+  .actions {
+    display: none;
+  }
+  .deliveryModal {
+    padding-top: 2rem;
+  }
+  .modalContent {
+    max-width: 95%;
+    padding: 2rem 1.5rem 1.5rem;
+  }
+}
+
+/* ========================================
+   SMALL MOBILE RESPONSIVE
+   ======================================== */
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0.5rem;
+  }
+  .logo {
+    padding: 0.375rem;
+  }
+  .modalTitle {
+    font-size: 1.125rem;
+  }
+  .deliveryOptions {
+    gap: 0.5rem;
+  }
+  .optionBtn {
+    padding: 0.75rem 0.375rem;
+    font-size: 0.75rem;
+  }
+  .addressSection {
+    padding: 0.75rem;
+  }
+}
