@@ -11,8 +11,8 @@ import PopularProducts from "@/components/products/PopularProducts";
 import ProductGrid2 from "@/components/products/ProductGrid2";
 
 export const metadata: Metadata = {
-  title: "Home — Ajanja Imperial Group",
-  description: "Pharmacy solutions — clean, accessible and fast.",
+  title: "OBAT CHEMISTS",
+  description: "Modern Pharmacy solutions — clean, accessible and fast.",
 };
 
 export default function Home() {

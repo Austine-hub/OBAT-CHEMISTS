@@ -59,7 +59,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
               </div>
             </Link>
 
-            <Link href="/account" className={styles.actionLink} aria-label="Account">
+            <Link href="/auth/login" className={styles.actionLink} aria-label="Account">
               <User size={24} />
               <div className={styles.actionText}>
                 <span className={styles.actionLabel}>Sign in</span>
