@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
 // Page Metadata
 // --------------------
 export const metadata: Metadata = {
-  title: "Walmart Clone", // Optimized placeholder title
+  title: "OBAT CHEMISTS", // Optimized placeholder title
   description: "E-commerce layout integrating TopBar and Navbar components.",
 };
 

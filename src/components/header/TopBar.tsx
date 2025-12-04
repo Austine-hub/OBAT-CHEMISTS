@@ -23,28 +23,25 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
       <header className={styles.topbar}>
         <div className={styles.container}>
 
-                  {/* ==== NEW LOGO SECTION ==== */}
-        <div className={styles.brandWrapper}>
-          <Link
-            href="/"
-            className={styles.brandSection}
-            aria-label="Go to OBAT Chemists homepage"
-          >
-            <Image
-              src="/logo.png"
-              alt="OBAT Chemists Logo"
-              width={60}
-              height={50}
-              className={styles.brandLogo}
-              priority
-            />
-            <span className={styles.brandName}>OBAT Chemists</span>
-          </Link>
+          {/* ==== NEW LOGO SECTION ==== */}
+          <div className={styles.brandWrapper}>
+            {/* Brand Logo + Name */}
+            <Link
+              href="/"
+              className={styles.brandSection}
+              aria-label="Go to OBAT Chemists homepage"
+            >
+              <Image
+                src="/logo.png"
+                alt="OBAT Chemists Logo"
+                width={60}
+                height={50}
+                className={styles.brandLogo}
+                priority
+              />
+              <span className={styles.brandName}>OBAT Chemists</span>
+            </Link>
 
-          {/* Home Icon below brand name */}
-          <Link href="/" className={styles.homeIcon} aria-label="Home">
-            <Home size={18} />
-          </Link>
         </div>
 
 
@@ -66,7 +63,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
           <div className={styles.searchWrapper}>
             <input 
               type="search"
-              placeholder="Search everything at Walmart"
+              placeholder="Search everything at OBAT CHEMISTS"
               className={styles.searchInput}
               aria-label="Search products"
             />

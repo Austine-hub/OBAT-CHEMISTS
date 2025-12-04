@@ -66,12 +66,11 @@ body {
 }
 
 
-/* Brand wrapper stacks logo+name + home icon vertically */
+/* Brand wrapper aligns items horizontally */
 .brandWrapper {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.25rem; /* small spacing between brand and home icon */
+  gap: 1.5rem; /* spacing between brand and home */
 }
 
 /* Brand section (logo + name) */
@@ -82,7 +81,30 @@ body {
   gap: 0.25rem;
   color: #fff;
   font-weight: 700;
-  font-size: 2.5rem;
+  font-size: 1rem;
+  text-align: center;
+}
+
+/* Brand logo */
+.brandLogo {
+  border-radius: 50%;
+}
+
+/* Brand wrapper aligns brand and home side by side */
+.brandWrapper {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* spacing between brand and home */
+}
+
+/* Brand section (logo + name) */
+.brandSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: #fff;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -93,9 +115,40 @@ body {
 
 /* Brand name */
 .brandName {
-  white-space: nowrap;
   font-size: 0.875rem;
+  white-space: nowrap;
 }
+
+/* Home section (icon stacked above text) */
+.homeSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem; /* spacing between icon and text */
+  color: #fff;
+  text-decoration: none;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background 0.2s ease;
+}
+
+.homeSection:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Home text */
+.homeText {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Hide home section on mobile */
+@media (max-width: 768px) {
+  .homeSection {
+    display: none;
+  }
+}
+
 
 /* Home icon below brand name */
 .homeIcon {
@@ -118,7 +171,6 @@ body {
     display: none;
   }
 }
-
 
 /* ========================================
    DELIVERY BUTTON

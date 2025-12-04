@@ -1,24 +1,20 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, X, Home } from 'lucide-react';
 import Link from 'next/link';
 import styles from './Navbar.module.css';
 
-interface Column {
-  title?: string;
-  items: string[];
+interface NavLink {
+  label: string;
+  path: string;
 }
 
-interface MenuSection {
-  title: string;
-  columns: Column[];
-}
-
-interface MenuData {
-  departments: MenuSection;
-  services: MenuSection;
-  more: MenuSection;
+interface NavItem {
+  label: string;
+  key: string;
+  path?: string;
+  links?: NavLink[];
 }
 
 interface NavbarProps {
@@ -26,156 +22,125 @@ interface NavbarProps {
   onClose: () => void;
 }
 
-const navItems: string[] = [
-  'Deals & More',
-  'New Arrivals',
-  'Holiday Shop',
-  'Get it Fast',
-  'Dinner Made Easy',
-  'Gift Shop',
-  'My Items',
+const NAV_ITEMS: NavItem[] = [
+  {
+    label: "Shop By Category",
+    key: "category",
+    links: [
+      { label: "Skin Care", path: "/categories/skin-care" },
+      { label: "Beauty & Cosmetics", path: "/categories/beauty-care-cosmetics" },
+      { label: "Vitamins & Supplements", path: "/categories/vitamins-supplements" },
+      { label: "Medicine", path: "/categories/medicine" },
+      { label: "Hygiene", path: "/categories/general-hygiene" },
+      { label: "Home Healthcare", path: "/categories/home-healthcare" },
+    ],
+  },
+  {
+    label: "Shop By Condition",
+    key: "condition",
+    links: [
+      { label: "Hypertension", path: "/conditions/htn" },
+      { label: "Diabetes", path: "/conditions/diabetes" },
+      { label: "Cough, Cold & Flu", path: "/conditions/flu" },
+      { label: "UTI", path: "/conditions/uti-infections" },
+      { label: "Skin Treatment", path: "/conditions/skin-treatment" },
+    ],
+  },
+  {
+    label: "Shop By Body System",
+    key: "system",
+    links: [
+      { label: "Reproductive", path: "/system/reproductive" },
+      { label: "Respiratory", path: "/system/respiratory" },
+      { label: "Diabetes", path: "/system/diabetes" },
+      { label: "GIT", path: "/system/git" },
+      { label: "Renal", path: "/system/renal" },
+      { label: "Nervous", path: "/system/nervous" },
+      { label: "ENT", path: "/system/ent" },
+      { label: "Oral Hygiene", path: "/system/oral-hygiene" },
+      { label: "MSK", path: "/system/msk" },
+    ],
+  },
+   { label: "Offers", key: "offers", path: "/offers" },
+  { label: "Services", key: "services", path: "/about-us" },
+  { label: "Contact", key: "contact", path: "/contact-us" },
 ];
-
-const menuData: MenuData = {
-  departments: {
-    title: 'Departments',
-    columns: [
-      {
-        title: 'Electronics',
-        items: ['Computers', 'Tablets', 'TVs', 'Cameras', 'Audio', 'Wearables', 'Gaming'],
-      },
-      {
-        title: 'Home & Kitchen',
-        items: ['Furniture', 'Appliances', 'Bedding', 'Decor', 'Kitchen'],
-      },
-      {
-        title: 'Fashion',
-        items: ['Clothing', 'Shoes', 'Jewelry', 'Accessories', 'Watches'],
-      },
-    ],
-  },
-  services: {
-    title: 'Services',
-    columns: [
-      {
-        items: ['Pharmacy', 'Auto Care', 'Photo Center', 'Financial Services', 'Vision Center'],
-      },
-    ],
-  },
-  more: {
-    title: 'More',
-    columns: [
-      {
-        items: ['Registry', 'Protection Plans', 'Credit Cards', 'Gift Cards', 'Subscriptions'],
-      },
-    ],
-  },
-};
 
 export default function Navbar({ isOpen, onClose }: NavbarProps) {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
-  const handleClickOutside = useCallback((e: MouseEvent) => {
-    if (navRef.current && !navRef.current.contains(e.target as Node)) {
-      setActiveDropdown(null);
-    }
-  }, []);
-
   useEffect(() => {
-    if (activeDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [activeDropdown, handleClickOutside]);
+    if (!activeDropdown) return;
+    const handleClick = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [activeDropdown]);
 
-  const toggleDropdown = (key: string) => {
-    setActiveDropdown(activeDropdown === key ? null : key);
-  };
-
-  const handleNavLinkClick = () => {
+  const handleClose = () => {
     onClose();
     setActiveDropdown(null);
   };
 
-  const renderDropdown = (section: MenuSection) => (
-    <div className={styles.dropdown} role="menu">
-      {section.columns.map((col, idx) => (
-        <div key={idx} className={styles.column}>
-          {col.title && <h3 className={styles.columnTitle}>{col.title}</h3>}
-          <ul className={styles.columnList}>
-            {col.items.map((item, i) => (
-              <li key={i} className={styles.columnItem}>
-                <Link href="#" role="menuitem" onClick={handleNavLinkClick}>
-                  {item}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
-    <nav 
-      className={`${styles.navbar} ${isOpen ? styles.open : ''}`} 
-      ref={navRef} 
-      aria-label="Main navigation"
-    >
+    <nav className={`${styles.navbar} ${isOpen ? styles.open : ''}`} ref={navRef} aria-label="Main navigation">
       <div className={styles.mobileHeader}>
-        <h2 className={styles.mobileTitle}>Shop by Category</h2>
-        <button 
-          onClick={onClose} 
-          className={styles.closeBtn} 
-          aria-label="Close mobile navigation"
-        >
+        <h2 className={styles.mobileTitle}>Menu</h2>
+        <button onClick={onClose} className={styles.closeBtn} aria-label="Close navigation">
           <X size={24} />
         </button>
       </div>
 
       <div className={styles.container}>
         <div className={styles.desktopNav}>
-          <div className={styles.dropdownWrapper}>
-            <button
-              className={`${styles.navBtn} ${activeDropdown === 'departments' ? styles.active : ''}`}
-              onClick={() => toggleDropdown('departments')}
-              aria-expanded={activeDropdown === 'departments'}
-              aria-haspopup="true"
-            >
-              Departments <ChevronDown size={16} aria-hidden="true" />
-            </button>
-            {activeDropdown === 'departments' && renderDropdown(menuData.departments)}
-          </div>
+          <Link href="/" className={styles.homeSection} aria-label="Home" onClick={handleClose}>
+            <Home size={24} />
+            <span className={styles.homeText}>Home</span>
+          </Link>
 
-          <div className={styles.dropdownWrapper}>
-            <button
-              className={`${styles.navBtn} ${activeDropdown === 'services' ? styles.active : ''}`}
-              onClick={() => toggleDropdown('services')}
-              aria-expanded={activeDropdown === 'services'}
-              aria-haspopup="true"
-            >
-              Services <ChevronDown size={16} aria-hidden="true" />
-            </button>
-            {activeDropdown === 'services' && renderDropdown(menuData.services)}
-          </div>
+          {NAV_ITEMS.map((item) => 
+            item.links ? (
+              <div key={item.key} className={styles.dropdownWrapper}>
+                <button
+                  className={`${styles.navBtn} ${activeDropdown === item.key ? styles.active : ''}`}
+                  onClick={() => setActiveDropdown(activeDropdown === item.key ? null : item.key)}
+                  aria-expanded={activeDropdown === item.key}
+                  aria-haspopup="true"
+                >
+                  {item.label} <ChevronDown size={16} aria-hidden="true" />
+                </button>
+                {activeDropdown === item.key && (
+                  <div className={styles.dropdown} role="menu">
+                    <ul className={styles.columnList}>
+                      {item.links.map((link, i) => (
+                        <li key={i}>
+                          <Link href={link.path} role="menuitem" onClick={handleClose}>
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link key={item.key} href={item.path || '#'} className={styles.navLink} onClick={handleClose}>
+                {item.label}
+              </Link>
+            )
+          )}
 
-          {navItems.map((item) => (
-            <Link key={item} href="#" className={styles.navLink} onClick={handleNavLinkClick}>
-              {item}
+          <div className={styles.actions}>
+            <Link href="/speak-to-doctor" className={styles.btnDark} onClick={handleClose}>
+              Speak to a Doctor
             </Link>
-          ))}
-
-          <div className={styles.dropdownWrapper}>
-            <button
-              className={`${styles.navBtn} ${activeDropdown === 'more' ? styles.active : ''}`}
-              onClick={() => toggleDropdown('more')}
-              aria-expanded={activeDropdown === 'more'}
-              aria-haspopup="true"
-            >
-              More <ChevronDown size={16} aria-hidden="true" />
-            </button>
-            {activeDropdown === 'more' && renderDropdown(menuData.more)}
+            <Link href="/upload-prescription" className={styles.btnGreen} onClick={handleClose}>
+              Upload a Prescription
+            </Link>
           </div>
         </div>
       </div>
