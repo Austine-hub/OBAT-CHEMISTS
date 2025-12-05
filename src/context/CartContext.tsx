@@ -1,4 +1,5 @@
 "use client";
+import type { StaticImageData } from "next/image";
 
 import {
   createContext,
@@ -21,7 +22,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  image?: string;
+  image: string | StaticImageData;   // ✅ Accept both
   category?: string;
   description?: string;
   variation?: string;
