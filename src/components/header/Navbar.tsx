@@ -27,8 +27,9 @@ const NAV_ITEMS: NavItem[] = [
     label: "Shop By Category",
     key: "category",
     links: [
-      { label: "Skin Care", path: "/categories/skin-care" },
-      { label: "Beauty & Cosmetics", path: "/categories/beauty-care-cosmetics" },
+      { label: "Skin Care", path: "/category/skincare" },
+      { label: "Diabetes", path: "/category/diabetes" },      
+      { label: "Beauty & Cosmetics", path: "/category/beauty" },
       { label: "Vitamins & Supplements", path: "/categories/vitamins-supplements" },
       { label: "Medicine", path: "/categories/medicine" },
       { label: "Hygiene", path: "/categories/general-hygiene" },
@@ -50,18 +51,18 @@ const NAV_ITEMS: NavItem[] = [
     label: "Shop By Body System",
     key: "system",
     links: [
+      { label: "Cardiovascular", path: "/system/cvs" },
       { label: "Reproductive", path: "/system/reproductive" },
       { label: "Respiratory", path: "/system/respiratory" },
-      { label: "Diabetes", path: "/system/diabetes" },
       { label: "GIT", path: "/system/git" },
       { label: "Renal", path: "/system/renal" },
-      { label: "Nervous", path: "/system/nervous" },
-      { label: "ENT", path: "/system/ent" },
-      { label: "Oral Hygiene", path: "/system/oral-hygiene" },
+      { label: "Nervous", path: "/system/cns" },
+      { label: "Oral Hygiene", path: "/system/oral" },
       { label: "MSK", path: "/system/msk" },
+      { label: "Sexual", path: "/system/sexual" },
     ],
   },
-   { label: "Offers", key: "offers", path: "/offers" },
+  { label: "Offers", key: "offers", path: "/offers" },
   { label: "Services", key: "services", path: "/about-us" },
   { label: "Contact", key: "contact", path: "/contact-us" },
 ];
@@ -102,7 +103,7 @@ export default function Navbar({ isOpen, onClose }: NavbarProps) {
             <span className={styles.homeText}>Home</span>
           </Link>
 
-          {NAV_ITEMS.map((item) => 
+          {NAV_ITEMS.map((item) =>
             item.links ? (
               <div key={item.key} className={styles.dropdownWrapper}>
                 <button

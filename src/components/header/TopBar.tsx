@@ -63,7 +63,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
           <div className={styles.searchWrapper}>
             <input 
               type="search"
-              placeholder="Search everything at OBAT CHEMISTS"
+              placeholder="Search everything at OBAT CHEMISTS..."
               className={styles.searchInput}
               aria-label="Search products"
             />
