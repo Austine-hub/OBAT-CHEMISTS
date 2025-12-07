@@ -1,8 +1,36 @@
 
-
+/* Base (Mobile) */
 .layoutWrapper {
   display: block;
   width: 100%;
-  height: 168px;
-  margin-bottom: 0.11115rem; /* creates separation below header */
+  height: 15px; /* mobile default */
+  margin-bottom: 0.11115rem; /* separation below header */
+}
+
+/* Small Tablet (≥ 576px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .layoutWrapper {
+    height: 25px;
+  }
+}
+
+/* Large Tablet (≥ 768px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .layoutWrapper {
+    height: 97px;
+  }
+}
+
+/* Small Desktop (≥ 992px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .layoutWrapper {
+    height: 120px;
+  }
+}
+
+/* Large Desktop (≥ 1200px) */
+@media (min-width: 1200px) {
+  .layoutWrapper {
+    height: 170px;
+  }
 }
