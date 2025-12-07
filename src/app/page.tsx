@@ -9,6 +9,8 @@ import GetStarted from "@/components/getstarted/GetStarted";
 import ProductGrid from "@/components/products/ProductsGrid";
 import PopularProducts from "@/components/products/PopularProducts";
 import ProductGrid2 from "@/components/products/ProductGrid2";
+import HealthCenter from "@/components/center/HealthCare";
+import DealsOfTheDay from "@/components/deals/DealsOfTheDay";
 
 export const metadata: Metadata = {
   title: "OBAT CHEMISTS",
@@ -30,6 +32,13 @@ export default function Home() {
       <section aria-labelledby="hero-heading" className="w-full">
         <GetStarted />
       </section>
+
+      
+       {/*DealsOfTheDay */}
+      <section aria-labelledby="hero-heading" className="w-full">
+        <DealsOfTheDay/>
+      </section>
+
 
      {/*ProductGrid */}
       <section aria-labelledby="ProductGrid" className="w-full">
@@ -79,6 +88,17 @@ export default function Home() {
       >
         <div className="mx-auto max-w-7xl">
           <PharmacyFeatures />
+        </div>
+      </section>
+
+
+     {/*HealthCenter */}
+      <section
+        aria-labelledby="features-heading"
+        className="w-full px-4 sm:px-6 lg:px-8 pb-16"
+      >
+        <div className="mx-auto max-w-7xl">
+          <HealthCenter/>
         </div>
       </section>
 

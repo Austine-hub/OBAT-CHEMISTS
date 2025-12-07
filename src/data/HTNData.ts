@@ -2,6 +2,7 @@
 // 💊 HTNData.ts — Central Data Source for Hypertension Products
 // Serves as the Model layer for HTNDetails.tsx & HTN.tsx
 // ============================================================================
+import type { StaticImageData } from "next/image";
 
 // ===============================
 // ✅ Static Image Imports
@@ -31,7 +32,7 @@ export interface Product {
   originalPrice?: number;
   category: string;
   stock: "In Stock" | "Out of Stock";
-  image: string;
+  image: StaticImageData | string;
   rating: number;
   badge?: string;
   manufacturer: string;
@@ -58,7 +59,7 @@ export const htnProducts: Product[] = [
     price: 3200,
     originalPrice: 3500,
     stock: "In Stock",
-    image: amlodipineImg.src,
+    image: amlodipineImg,
     rating: 4.7,
     badge: "SALE",
     description:
@@ -84,7 +85,7 @@ export const htnProducts: Product[] = [
     price: 2800,
     originalPrice: 3000,
     stock: "In Stock",
-    image: atenololImg.src,
+    image: atenololImg,
     rating: 4.6,
     description:
       "Tenormin (Atenolol) is a cardioselective beta-blocker that lowers blood pressure by reducing heart rate and cardiac output. It is also used for angina and post-myocardial infarction management.",
@@ -109,7 +110,7 @@ export const htnProducts: Product[] = [
     price: 3400,
     originalPrice: 3700,
     stock: "In Stock",
-    image: bisoprololImg.src,
+    image: bisoprololImg,
     rating: 4.9,
     badge: "NEW",
     description:
@@ -135,7 +136,7 @@ export const htnProducts: Product[] = [
     price: 3600,
     originalPrice: 3850,
     stock: "In Stock",
-    image: candesartanImg.src,
+    image: candesartanImg,
     rating: 4.8,
     description:
       "Atacand (Candesartan) is an ARB that relaxes blood vessels and helps control blood pressure effectively. It reduces the risk of stroke and heart failure in hypertensive patients.",
@@ -160,7 +161,7 @@ export const htnProducts: Product[] = [
     price: 3000,
     originalPrice: 3200,
     stock: "In Stock",
-    image: chlorthalidoneImg.src,
+    image: chlorthalidoneImg,
     rating: 4.5,
     description:
       "Hygroton (Chlorthalidone) is a thiazide-like diuretic that helps the kidneys remove excess salt and water, lowering blood pressure and reducing fluid retention.",
@@ -185,7 +186,7 @@ export const htnProducts: Product[] = [
     price: 3100,
     originalPrice: 3400,
     stock: "In Stock",
-    image: enalaprilImg.src,
+    image: enalaprilImg,
     rating: 4.4,
     description:
       "Renitec (Enalapril) is an ACE inhibitor that relaxes blood vessels and reduces cardiac workload. It’s used in hypertension and heart failure management.",
@@ -210,7 +211,7 @@ export const htnProducts: Product[] = [
     price: 2700,
     originalPrice: 2950,
     stock: "In Stock",
-    image: furosemideImg.src,
+    image: furosemideImg,
     rating: 4.6,
     description:
       "Lasix (Furosemide) is a potent loop diuretic used in managing hypertension and edema due to heart failure, liver, or kidney disease.",
@@ -235,7 +236,7 @@ export const htnProducts: Product[] = [
     price: 2900,
     originalPrice: 3100,
     stock: "In Stock",
-    image: hydrochlorothiazideImg.src,
+    image: hydrochlorothiazideImg,
     rating: 4.3,
     description:
       "Hydrosan (Hydrochlorothiazide) promotes sodium and water excretion to help lower blood pressure and prevent fluid retention.",
@@ -260,7 +261,7 @@ export const htnProducts: Product[] = [
     price: 3300,
     originalPrice: 3500,
     stock: "In Stock",
-    image: losartanImg.src,
+    image: losartanImg,
     rating: 4.8,
     description:
       "Cozaar (Losartan) is an ARB that helps lower blood pressure and protect the kidneys, particularly in diabetic patients.",
@@ -285,7 +286,7 @@ export const htnProducts: Product[] = [
     price: 3200,
     originalPrice: 3450,
     stock: "In Stock",
-    image: nifedipineImg.src,
+    image: nifedipineImg,
     rating: 4.7,
     description:
       "Adalat (Nifedipine) relaxes and widens blood vessels to improve blood flow, reducing blood pressure and angina symptoms.",
@@ -310,7 +311,7 @@ export const htnProducts: Product[] = [
     price: 3400,
     originalPrice: 3700,
     stock: "In Stock",
-    image: spironolactoneImg.src,
+    image: spironolactoneImg,
     rating: 4.9,
     description:
       "Aldactone (Spironolactone) is a potassium-sparing diuretic that counteracts aldosterone to reduce fluid retention and blood pressure.",
@@ -335,7 +336,7 @@ export const htnProducts: Product[] = [
     price: 3550,
     originalPrice: 3800,
     stock: "In Stock",
-    image: telmisartanImg.src,
+    image: telmisartanImg,
     rating: 4.8,
     description:
       "Micardis (Telmisartan) is an ARB known for its long half-life and 24-hour blood pressure control, offering organ protection and improved compliance.",
@@ -360,7 +361,7 @@ export const htnProducts: Product[] = [
     price: 3700,
     originalPrice: 4000,
     stock: "In Stock",
-    image: valsartanImg.src,
+    image: valsartanImg,
     rating: 4.9,
     description:
       "Diovan (Valsartan) is an ARB used to manage hypertension and improve survival post-heart failure. It blocks angiotensin II to relax vessels and reduce strain on the heart.",

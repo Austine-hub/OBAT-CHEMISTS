@@ -5,7 +5,7 @@
   --dropdown-bg: #fff;
   --dropdown-text: #2e2f32;
   --border-color: #e5e5e5;
-  --topbar-height: 94px;
+  --topbar-height:96px;
   --btn-dark: #3c3c3c;
   --btn-green: #7ab344;
   --btn-green-hover: #6a9e3a;
@@ -20,7 +20,7 @@
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
+  margin-bottom: 0.00125 rem;
 }
 
 .container {

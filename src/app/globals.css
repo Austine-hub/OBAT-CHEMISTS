@@ -1,6 +1,54 @@
 :root {
+  /* Brand + UI colors */
   --background: #ffffff;
   --foreground: #171717;
+
+  --p6: #0066cc; 
+  --p7: #0052a3; 
+  --p5: #e6f2ff; 
+  --p1: #b3d9ff;
+
+  --s6: #059669; 
+  --s5: #d1fae5; 
+
+  --w6: #d97706; 
+  --w5: #fef3c7;
+
+  --d6: #dc2626; 
+  --d5: #fee2e2;
+
+  --g0: #f9fafb; 
+  --g1: #f3f4f6; 
+  --g2: #e5e7eb; 
+  --g3: #d1d5db;
+  --g4: #9ca3af; 
+  --g5: #6b7280; 
+  --g6: #4b5563; 
+  --g7: #374151;
+  --g8: #1f2937; 
+  --g9: #111827; 
+
+  --w: #fff;
+
+  /* Sizes */
+  --sw: 280px; 
+  --hh: 72px; 
+  --r: 12px; 
+  --rs: 8px; 
+  --rl: 16px;
+
+  /* Shadows */
+  --sh1: 0 1px 2px 0 rgba(0,0,0,.05);
+  --sh2: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+  --sh3: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+  --sh4: 0 20px 25px -5px rgba(0,0,0,.1), 0 10px 10px -5px rgba(0,0,0,.04);
+
+  /* Motion */
+  --t: all .2s cubic-bezier(.4,0,.2,1);
+  --tt: transform .3s cubic-bezier(.4,0,.2,1);
+
+  /* UNIVERSAL FIX — TopBar height */
+  --topbar-height: 98px; /* keep consistent with TopBar.module.css */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -8,6 +56,12 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
@@ -22,12 +76,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+  /* IMPORTANT: remove old padding hacks */
+  padding-top: 0;
 }
 
 a {

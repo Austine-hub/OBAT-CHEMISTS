@@ -31,7 +31,7 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Diabetes", path: "/category/diabetes" },      
       { label: "Beauty & Cosmetics", path: "/category/beauty" },
       { label: "Vitamins & Supplements", path: "/category/vitamins" },
-      { label: "Medicine", path: "/categories/medicine" },
+      { label: "Medicine", path: "/category/medicine" },
       { label: "Hygiene", path: "/category/hygiene" },
       { label: "Home Healthcare", path: "/categories/home-healthcare" },
     ],
@@ -43,8 +43,8 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Hypertension", path: "/conditions/htn" },
       { label: "Diabetes", path: "/conditions/diabetes" },
       { label: "Cough, Cold & Flu", path: "/conditions/flu" },
-      { label: "UTI", path: "/conditions/uti-infections" },
-      { label: "Skin Treatment", path: "/conditions/skin-treatment" },
+      { label: "UTI", path: "/conditions/uti" },
+      { label: "Skin Treatment", path: "/conditions/skin" },
     ],
   },
   {
@@ -63,9 +63,8 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   { label: "Offers", key: "offers", path: "/offers" },
-  { label: "Services", key: "services", path: "/about-us" },
-  { label: "Contact", key: "contact", path: "/contact-us" },
-];
+  { label: "Dashboard", key: "dashboard", path: "/dashboard" },
+ ];
 
 export default function Navbar({ isOpen, onClose }: NavbarProps) {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -136,10 +135,10 @@ export default function Navbar({ isOpen, onClose }: NavbarProps) {
           )}
 
           <div className={styles.actions}>
-            <Link href="/speak-to-doctor" className={styles.btnDark} onClick={handleClose}>
+            <Link href="/consultation" className={styles.btnDark} onClick={handleClose}>
               Speak to a Doctor
             </Link>
-            <Link href="/upload-prescription" className={styles.btnGreen} onClick={handleClose}>
+            <Link href="/prescriptions" className={styles.btnGreen} onClick={handleClose}>
               Upload a Prescription
             </Link>
           </div>
