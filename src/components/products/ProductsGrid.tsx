@@ -1,176 +1,124 @@
 "use client";
 
+import React, { useCallback } from "react";
+import Image from "next/image";
 import { Heart, ShoppingCart, ArrowRight } from "lucide-react";
-import styles from "./ProductGrid.module.css";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  discount: number;
-  originalPrice: number;
-  currentPrice: number;
-}
+// MVC → import data (Model layer)
+import { products, type Product } from "@/data/details/ProductGrid"; 
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: "Cosy Toilet Paper Emb. Unwrap 10s 200 Sheets White",
-    image: "/products/toilet-paper.jpg",
-    discount: 45,
-    originalPrice: 545,
-    currentPrice: 300,
-  },
-  {
-    id: 2,
-    name: "Uncover Aloe Invisible Sunscreen 80ml",
-    image: "/products/sunscreen.jpg",
-    discount: 10,
-    originalPrice: 3200,
-    currentPrice: 2880,
-  },
-  {
-    id: 3,
-    name: "Acnes Treatment Set",
-    image: "/products/acnes-set.jpg",
-    discount: 20,
-    originalPrice: 1819,
-    currentPrice: 1456,
-  },
-  {
-    id: 4,
-    name: "Acnes C10 15ml",
-    image: "/products/acnes-c10.jpg",
-    discount: 12,
-    originalPrice: 2700,
-    currentPrice: 2338,
-  },
-  {
-    id: 5,
-    name: "Melano CC Rich Moisturizing Cream",
-    image: "/products/melano-cream.jpg",
-    discount: 40,
-    originalPrice: 2901,
-    currentPrice: 1751,
-  },
-  {
-    id: 6,
-    name: "Melano CC Rich Moisturising Cream 100G",
-    image: "/products/melano-100g.jpg",
-    discount: 30,
-    originalPrice: 2536,
-    currentPrice: 1775,
-  },
-  {
-    id: 7,
-    name: "Melano CC Skin Spot Essence 20ml",
-    image: "/products/melano-essence.jpg",
-    discount: 30,
-    originalPrice: 1860,
-    currentPrice: 1302,
-  },
-  {
-    id: 8,
-    name: "Nice & Lovely Baby Range Value Pack",
-    image: "/products/baby-pack.jpg",
-    discount: 30,
-    originalPrice: 2600,
-    currentPrice: 1820,
-  },
-  {
-    id: 9,
-    name: "Garnier Bye Acne & Dark Spots Kit",
-    image: "/products/garnier-kit.jpg",
-    discount: 30,
-    originalPrice: 4345,
-    currentPrice: 3042,
-  },
-  {
-    id: 10,
-    name: "Garnier Even & Matte Vitamin C Booster serum 30ml",
-    image: "/products/garnier-serum.jpg",
-    discount: 20,
-    originalPrice: 1750,
-    currentPrice: 1400,
-  },
-];
+import styles from "./ProductGrid.module.css";
 
-export default function ProductGrid() {
+// Controller abstraction (separation of intent)
+const useProductGridController = () => {
   const router = useRouter();
 
-  const goToDetails = (id: number) => {
-    router.push(`/products/${id}`); // <-- Navigate to details page
-  };
+  const goToDetails = useCallback((id: number) => {
+    router.push(`/products/${id}`);
+  }, [router]);
+
+  const stopEvent = useCallback(
+    (e: React.MouseEvent) => e.stopPropagation(),
+    []
+  );
+
+  return { goToDetails, stopEvent };
+};
+
+export default function ProductGrid() {
+  const { goToDetails, stopEvent } = useProductGridController();
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} aria-labelledby="pink-rush-title">
+      {/* HEADER */}
       <div className={styles.header}>
-        <h2 className={styles.title}>The Pink Rush</h2>
+        <h2 id="pink-rush-title" className={styles.title}>
+          The Pink Rush
+        </h2>
 
-        <button className={styles.viewAll}>
+        <button
+          className={styles.viewAll}
+          aria-label="View all products"
+        >
           View All <ArrowRight size={18} strokeWidth={2} />
         </button>
       </div>
 
+      {/* GRID */}
       <div className={styles.grid}>
-        {products.map((product) => (
-          <article
+        {products.map((product: Product) => (
+          <motion.article
             key={product.id}
-            className={styles.card}
+            role="button"
+            tabIndex={0}
             onClick={() => goToDetails(product.id)}
-            style={{ cursor: "pointer" }} // make it look clickable
+            className={styles.card}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
-            <div className={styles.badge}>{product.discount}% Off</div>
+            {/* DISCOUNT BADGE */}
+            {!!product.discount && (
+              <div className={styles.badge}>
+                {product.discount}% Off
+              </div>
+            )}
 
+            {/* ACTION ICONS */}
             <div className={styles.actions}>
               <button
                 className={styles.iconBtn}
                 aria-label="Add to wishlist"
-                onClick={(e) => e.stopPropagation()} // prevent card navigation
+                onClick={stopEvent}
               >
                 <Heart size={18} strokeWidth={2} />
               </button>
 
               <button
                 className={styles.iconBtn}
-                aria-label="Quick view"
-                onClick={(e) => e.stopPropagation()} // prevent card navigation
+                aria-label="Add to cart"
+                onClick={stopEvent}
               >
                 <ShoppingCart size={18} strokeWidth={2} />
               </button>
             </div>
 
+            {/* IMAGE */}
             <div className={styles.imageWrapper}>
-              <img
+              <Image
                 src={product.image}
                 alt={product.name}
+                fill
                 className={styles.image}
-                loading="lazy"
+                sizes="100vw"
+                priority={false}
               />
             </div>
 
+            {/* CONTENT */}
             <div className={styles.content}>
               <h3 className={styles.name}>{product.name}</h3>
 
               <div className={styles.pricing}>
                 <span className={styles.oldPrice}>
-                  KES {product.originalPrice.toFixed(2)}
+                  KES {product.originalPrice.toLocaleString()}
                 </span>
 
                 <span className={styles.price}>
-                  KES {product.currentPrice.toFixed(2)}
+                  KES {product.currentPrice.toLocaleString()}
                 </span>
               </div>
 
               <button
                 className={styles.addToCart}
-                onClick={(e) => e.stopPropagation()} // allow internal button click without navigation
+                onClick={stopEvent}
               >
                 + Add To Cart
               </button>
             </div>
-          </article>
+          </motion.article>
         ))}
       </div>
     </section>

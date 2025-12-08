@@ -1,50 +1,27 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import styles from "./DealsOfTheDayDetails.module.css";
 
-// MODEL — import from your DealsOfTheDay component
-import { Deal } from "@/components/DealsOfTheDay/DealsOfTheDay";
+// MODEL & CONTROLLER
+import { getDealById, Deal } from "@/data/details/deals";
 
-// TEMP CONTROLLER — replace with real API fetching later
-const getDealById = (id: string): Deal | undefined => {
-  const sampleData: Deal[] = [
-    {
-      id: "1",
-      img: "/api/placeholder/300/300",
-      name: "Depura Vitamin D3 60k Sugar Free Oral...",
-      mrp: 167.7,
-      price: 84.01,
-      discount: 22,
-    },
-    {
-      id: "2",
-      img: "/api/placeholder/300/300",
-      name: "Softovac Sf Constipation Powder...",
-      mrp: 492,
-      price: 329.64,
-      discount: 33,
-    },
-  ];
-
-  return sampleData.find((item) => item.id === id);
-};
-
-export default function DealsOfTheDayDetails() {
+export default function ProductDetailsPage() {
   const params = useParams();
-  const dealId = params?.id as string;
-  const deal = getDealById(dealId);
+  const router = useRouter();
+  const productId = params?.id as string;
+  const deal: Deal | undefined = getDealById(productId);
 
   if (!deal) {
     return (
       <motion.div
+        className={styles.notFound}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className={styles.notFound}
       >
         <p>❗ Product not found.</p>
         <Link href="/#deals" className={styles.goBackBtn}>
@@ -62,38 +39,35 @@ export default function DealsOfTheDayDetails() {
       transition={{ duration: 0.45, ease: "easeOut" }}
     >
       {/* Back Button */}
-      <Link href="/#deals" className={styles.backBtn}>
+      <button className={styles.backBtn} onClick={() => router.back()}>
         ← Back
-      </Link>
+      </button>
 
-      {/* MAIN CONTENT */}
+      {/* PRODUCT DETAILS CONTAINER */}
       <div className={styles.container}>
-        {/* IMAGE SECTION */}
+        {/* IMAGE */}
         <motion.div
           className={styles.imgBox}
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4 }}
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.3 }}
         >
           <Image
             src={deal.img}
-            width={350}
-            height={350}
             alt={deal.name}
+            width={400}
+            height={400}
             className={styles.image}
             priority
           />
         </motion.div>
 
-        {/* INFO SECTION */}
+        {/* PRODUCT INFO */}
         <div className={styles.info}>
           <h1 className={styles.title}>{deal.name}</h1>
-
           <p className={styles.mrp}>MRP: ₹{deal.mrp.toFixed(2)}</p>
 
           <div className={styles.priceBox}>
             <span className={styles.finalPrice}>₹{deal.price.toFixed(2)}</span>
-
             {deal.discount > 0 && (
               <span className={styles.discount}>
                 Save {deal.discount}% OFF
@@ -103,14 +77,18 @@ export default function DealsOfTheDayDetails() {
 
           <motion.button
             whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.03 }}
+            whileHover={{ scale: 1.05 }}
             className={styles.addBtn}
           >
             Add to Cart
           </motion.button>
+
+          {/* EXTRA INFO */}
+          <p className={styles.shipping}>
+            🚚 Free shipping on orders above ₹500
+          </p>
         </div>
       </div>
     </motion.div>
   );
 }
-

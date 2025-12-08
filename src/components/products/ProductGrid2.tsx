@@ -1,96 +1,177 @@
 "use client";
 
+import React, { useMemo, KeyboardEvent } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Heart, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import styles from "./ProductGrid2.module.css";
 
+// ===== MVC - MODEL (imported centralized data) =====
+import { productsArray, formatPrice } from "@/data/details/products"; // adjust path if needed
+// Product interface assumed exported from data.ts; otherwise adapt types below
 interface Product {
   id: number;
   name: string;
-  price: string;
+  price: number;
   image: string;
+  description?: string;
+  category?: string;
 }
 
-const products: Product[] = [
-  { id: 1, name: "Dewyglot's Lemon-Grass Essential oil 15ml", price: "KES 900.00", image: "https://via.placeholder.com/300x300/4CAF50/ffffff?text=Lemon" },
-  { id: 2, name: "SKIN1004 Centella Toning Toner 210ml", price: "KES 1,132.00", image: "https://via.placeholder.com/300x300/FFA726/ffffff?text=Toner" },
-  { id: 3, name: "Dewyglot's Organic Castor Oil", price: "KES 700.00", image: "https://via.placeholder.com/300x300/8B4513/ffffff?text=Castor" },
-  { id: 4, name: "Cerave Intensive Moisturizing Lotion 236ml", price: "KES 2,850.00", image: "https://via.placeholder.com/300x300/2196F3/ffffff?text=Cerave" },
-  { id: 5, name: "Lalo Amba-Jasmine Strengthening Hair Serum 100ml", price: "KES 2,398.00", image: "https://via.placeholder.com/300x300/1565C0/ffffff?text=Serum" },
-  { id: 6, name: "Lalo Hydrating UV Defense Sunscreen SPF50 100ml", price: "KES 2,300.00", image: "https://via.placeholder.com/300x300/FFD54F/ffffff?text=SPF50" },
-  { id: 7, name: "La Roche Posay Effaclar Duo+M Unipod Patches", price: "KES 2,000.00", image: "https://via.placeholder.com/300x300/64B5F6/ffffff?text=Patches" },
-  { id: 8, name: "Dercos Densi-Solutions Thickening Shampoo 250ml", price: "KES 3,000.00", image: "https://via.placeholder.com/300x300/FFE082/ffffff?text=Dercos" },
-  { id: 9, name: "Dercos Anti-Dandruff Shampoo Normal/Oily Hair 200ml", price: "KES 3,000.00", image: "https://via.placeholder.com/300x300/81C784/ffffff?text=Anti-D" },
-  { id: 10, name: "Dercos Anti-Dandruff Shampoo - Dry Hair 200ml", price: "KES 3,000.00", image: "https://via.placeholder.com/300x300/66BB6A/ffffff?text=Dry" },
-];
+// ===== CONTROLLER HELPERS (pure functions to keep view simple) =====
+const navigateToProduct = (router: ReturnType<typeof useRouter>, id: number) =>
+  router.push(`/products2/${id}`);
 
-export default function ProductGrid() {
-  const router = useRouter();
-
- const handleCardClick = (id: number) => {
- router.push(`/products2/${id}`); // dynamic route
+const handleCardKey =
+  (router: ReturnType<typeof useRouter>, id: number) =>
+  (e: KeyboardEvent<HTMLElement>) => {
+    // activate navigation on Enter or Space
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      navigateToProduct(router, id);
+    }
   };
 
+// (Example) small controller stub for add-to-cart/wishlist — replace with real logic
+const addToCart = (product: Product) => {
+  // TODO: replace with context / store / API call
+  console.log("add to cart", product.id);
+};
+
+const addToWishlist = (product: Product) => {
+  // TODO: replace with context / API call
+  console.log("wishlist", product.id);
+};
+
+// ===== VIEW =====
+export default function ProductGrid2() {
+  const router = useRouter();
+
+  // Memoize product list for render efficiency
+  const products = useMemo(() => productsArray as Product[], []);
+
+  if (!products || products.length === 0) {
+    return (
+      <section className={styles.empty} aria-live="polite">
+        <h2 className={styles.emptyTitle}>No products available</h2>
+        <p className={styles.emptyDesc}>Check back soon for new arrivals.</p>
+      </section>
+    );
+  }
+
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h2>New at OBAT</h2>
-        <a href="/products" className={styles.viewAll}>
-          View All
-        </a>
-      </header>
+    <section className={styles.container} aria-labelledby="new-at-obat">
+      <div className={styles.header}>
+        <h2 id="new-at-obat" className={styles.title}>
+          New at OBAT
+        </h2>
 
-      <div className={styles.grid}>
-        {products.map((product) => (
-          <article
-            key={product.id}
-            className={styles.card}
-            onClick={() => handleCardClick(product.id)}
-            style={{ cursor: "pointer" }}
-          >
-            <div className={styles.imageWrapper}>
-              <Image
-                src={product.image}
-                alt={product.name}
-                width={300}
-                height={300}
-                loading="lazy"
-                className={styles.image}
-              />
-
-              <div className={styles.icons}>
-                <button
-                  aria-label="Add to wishlist"
-                  className={styles.iconBtn}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Heart size={18} />
-                </button>
-                <button
-                  aria-label="Quick view"
-                  className={styles.iconBtn}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Eye size={18} />
-                </button>
-              </div>
-            </div>
-
-            <div className={styles.content}>
-              <h3>{product.name}</h3>
-              <p className={styles.price}>{product.price}</p>
-
-              <button
-                className={styles.addBtn}
-                onClick={(e) => e.stopPropagation()}
-              >
-                + Add To Cart
-              </button>
-            </div>
-          </article>
-        ))}
+        <Link href="/products" className={styles.viewAll} aria-label="View all products">
+          View all
+        </Link>
       </div>
-    </div>
+
+      <div
+        className={styles.grid}
+        role="list"
+        aria-label="New products"
+      >
+        {products.map((product) => {
+          const priceLabel = formatPrice ? formatPrice(product.price) : `KES ${product.price}`;
+
+          return (
+            <motion.article
+              key={product.id}
+              className={styles.card}
+              role="listitem"
+              tabIndex={0}
+              onKeyDown={handleCardKey(router, product.id)}
+              onClick={() => navigateToProduct(router, product.id)}
+              whileHover={{ translateY: -6 }}
+              whileTap={{ scale: 0.995 }}
+              layout
+              aria-labelledby={`product-title-${product.id}`}
+            >
+              <div className={styles.media}>
+                <Link
+                  href={`/products2/${product.id}`}
+                  aria-label={`Open details for ${product.name}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    width={520}
+                    height={520}
+                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px"
+                    loading="lazy"
+                    className={styles.image}
+                  />
+                </Link>
+
+                <div className={styles.overlayControls} aria-hidden="true">
+                  <button
+                    className={styles.iconBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToWishlist(product);
+                    }}
+                    aria-label={`Add ${product.name} to wishlist`}
+                    title="Add to wishlist"
+                  >
+                    <Heart size={16} />
+                  </button>
+
+                  <button
+                    className={styles.iconBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // quick view placeholder — replace with modal controller
+                      router.push(`/products2/${product.id}?quickView=1`);
+                    }}
+                    aria-label={`Quick view ${product.name}`}
+                    title="Quick view"
+                  >
+                    <Eye size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.content}>
+                <h3 id={`product-title-${product.id}`} className={styles.productName}>
+                  <Link
+                    href={`/products2/${product.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className={styles.productLink}
+                  >
+                    <span className={styles.productNameInner}>{product.name}</span>
+                  </Link>
+                </h3>
+
+                <div className={styles.meta}>
+                  <p className={styles.price} aria-label={`Price ${priceLabel}`}>
+                    {priceLabel}
+                  </p>
+
+                  <button
+                    className={styles.addBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
+                    aria-label={`Add ${product.name} to cart`}
+                  >
+                    + Add
+                  </button>
+                </div>
+              </div>
+            </motion.article>
+          );
+        })}
+      </div>
+    </section>
   );
 }
+
