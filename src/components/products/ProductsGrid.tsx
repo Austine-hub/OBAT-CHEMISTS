@@ -1,5 +1,8 @@
+"use client";
+
 import { Heart, ShoppingCart, ArrowRight } from "lucide-react";
 import styles from "./ProductGrid.module.css";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: number;
@@ -94,6 +97,12 @@ const products: Product[] = [
 ];
 
 export default function ProductGrid() {
+  const router = useRouter();
+
+  const goToDetails = (id: number) => {
+    router.push(`/products/${id}`); // <-- Navigate to details page
+  };
+
   return (
     <section className={styles.section}>
       <div className={styles.header}>
@@ -106,15 +115,28 @@ export default function ProductGrid() {
 
       <div className={styles.grid}>
         {products.map((product) => (
-          <article key={product.id} className={styles.card}>
+          <article
+            key={product.id}
+            className={styles.card}
+            onClick={() => goToDetails(product.id)}
+            style={{ cursor: "pointer" }} // make it look clickable
+          >
             <div className={styles.badge}>{product.discount}% Off</div>
 
             <div className={styles.actions}>
-              <button className={styles.iconBtn} aria-label="Add to wishlist">
+              <button
+                className={styles.iconBtn}
+                aria-label="Add to wishlist"
+                onClick={(e) => e.stopPropagation()} // prevent card navigation
+              >
                 <Heart size={18} strokeWidth={2} />
               </button>
 
-              <button className={styles.iconBtn} aria-label="Quick view">
+              <button
+                className={styles.iconBtn}
+                aria-label="Quick view"
+                onClick={(e) => e.stopPropagation()} // prevent card navigation
+              >
                 <ShoppingCart size={18} strokeWidth={2} />
               </button>
             </div>
@@ -141,7 +163,12 @@ export default function ProductGrid() {
                 </span>
               </div>
 
-              <button className={styles.addToCart}>+ Add To Cart</button>
+              <button
+                className={styles.addToCart}
+                onClick={(e) => e.stopPropagation()} // allow internal button click without navigation
+              >
+                + Add To Cart
+              </button>
             </div>
           </article>
         ))}

@@ -10,7 +10,7 @@ import ProductGrid from "@/components/products/ProductsGrid";
 import PopularProducts from "@/components/products/PopularProducts";
 import ProductGrid2 from "@/components/products/ProductGrid2";
 import HealthCenter from "@/components/center/HealthCare";
-import DealsOfTheDay from "@/components/deals/DealsOfTheDay";
+import DealsOfTheDay from "@/components/DealsOfTheDay/DealsOfTheDay";
 
 export const metadata: Metadata = {
   title: "OBAT CHEMISTS",

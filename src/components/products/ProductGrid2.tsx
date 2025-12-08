@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Heart, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 import styles from "./ProductGrid2.module.css";
 
 interface Product {
@@ -25,6 +26,12 @@ const products: Product[] = [
 ];
 
 export default function ProductGrid() {
+  const router = useRouter();
+
+ const handleCardClick = (id: number) => {
+ router.push(`/products2/${id}`); // dynamic route
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -36,7 +43,12 @@ export default function ProductGrid() {
 
       <div className={styles.grid}>
         {products.map((product) => (
-          <article key={product.id} className={styles.card}>
+          <article
+            key={product.id}
+            className={styles.card}
+            onClick={() => handleCardClick(product.id)}
+            style={{ cursor: "pointer" }}
+          >
             <div className={styles.imageWrapper}>
               <Image
                 src={product.image}
@@ -48,10 +60,18 @@ export default function ProductGrid() {
               />
 
               <div className={styles.icons}>
-                <button aria-label="Add to wishlist" className={styles.iconBtn}>
+                <button
+                  aria-label="Add to wishlist"
+                  className={styles.iconBtn}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Heart size={18} />
                 </button>
-                <button aria-label="Quick view" className={styles.iconBtn}>
+                <button
+                  aria-label="Quick view"
+                  className={styles.iconBtn}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Eye size={18} />
                 </button>
               </div>
@@ -61,7 +81,12 @@ export default function ProductGrid() {
               <h3>{product.name}</h3>
               <p className={styles.price}>{product.price}</p>
 
-              <button className={styles.addBtn}>+ Add To Cart</button>
+              <button
+                className={styles.addBtn}
+                onClick={(e) => e.stopPropagation()}
+              >
+                + Add To Cart
+              </button>
             </div>
           </article>
         ))}
@@ -69,4 +94,3 @@ export default function ProductGrid() {
     </div>
   );
 }
-

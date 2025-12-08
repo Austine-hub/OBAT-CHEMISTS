@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Heart, Eye } from "lucide-react";
 import styles from "./PopularProducts.module.css";
 
@@ -34,6 +35,12 @@ const products: Product[] = [
 ];
 
 const PopularProducts: React.FC = () => {
+  const router = useRouter();
+
+  const openProduct = (id: number) => {
+    router.push(`/popular-products/${id}`);
+  };
+
   return (
     <section className={styles.container}>
       {/* Header */}
@@ -47,15 +54,28 @@ const PopularProducts: React.FC = () => {
       {/* Product Grid */}
       <div className={styles.grid}>
         {products.map(({ id, name, price, oldPrice, image, badge }) => (
-          <article key={id} className={styles.card}>
+          <article
+            key={id}
+            className={styles.card}
+            onClick={() => openProduct(id)}
+          >
             {badge && <span className={styles.badge}>{badge}</span>}
 
             {/* Action Icons */}
             <div className={styles.actions}>
-              <button aria-label="Add to wishlist" className={styles.iconBtn}>
+              <button
+                aria-label="Add to wishlist"
+                className={styles.iconBtn}
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Heart size={18} strokeWidth={2} />
               </button>
-              <button aria-label="Quick view" className={styles.iconBtn}>
+
+              <button
+                aria-label="Quick view"
+                className={styles.iconBtn}
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Eye size={18} strokeWidth={2} />
               </button>
             </div>
@@ -77,7 +97,12 @@ const PopularProducts: React.FC = () => {
                 )}
               </div>
 
-              <button className={styles.addBtn}>+ Add To Cart</button>
+              <button
+                className={styles.addBtn}
+                onClick={(e) => e.stopPropagation()}
+              >
+                + Add To Cart
+              </button>
             </div>
           </article>
         ))}
