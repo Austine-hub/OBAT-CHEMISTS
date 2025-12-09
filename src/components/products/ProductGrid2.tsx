@@ -8,9 +8,9 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import styles from "./ProductGrid2.module.css";
 
-// ===== MVC - MODEL (imported centralized data) =====
-import { productsArray, formatPrice } from "@/data/details/products"; // adjust path if needed
-// Product interface assumed exported from data.ts; otherwise adapt types below
+// ===== MVC - MODEL (centralized data) =====
+import { productsArray, formatPrice } from "@/data/details/products";
+
 interface Product {
   id: number;
   name: string;
@@ -20,39 +20,34 @@ interface Product {
   category?: string;
 }
 
-// ===== CONTROLLER HELPERS (pure functions to keep view simple) =====
+// ===== CONTROLLER HELPERS =====
 const navigateToProduct = (router: ReturnType<typeof useRouter>, id: number) =>
   router.push(`/products2/${id}`);
 
 const handleCardKey =
   (router: ReturnType<typeof useRouter>, id: number) =>
   (e: KeyboardEvent<HTMLElement>) => {
-    // activate navigation on Enter or Space
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       navigateToProduct(router, id);
     }
   };
 
-// (Example) small controller stub for add-to-cart/wishlist — replace with real logic
 const addToCart = (product: Product) => {
-  // TODO: replace with context / store / API call
-  console.log("add to cart", product.id);
+  console.log("Add to cart:", product.id);
 };
 
 const addToWishlist = (product: Product) => {
-  // TODO: replace with context / API call
-  console.log("wishlist", product.id);
+  console.log("Add to wishlist:", product.id);
 };
 
 // ===== VIEW =====
 export default function ProductGrid2() {
   const router = useRouter();
 
-  // Memoize product list for render efficiency
   const products = useMemo(() => productsArray as Product[], []);
 
-  if (!products || products.length === 0) {
+  if (!products?.length) {
     return (
       <section className={styles.empty} aria-live="polite">
         <h2 className={styles.emptyTitle}>No products available</h2>
@@ -63,23 +58,20 @@ export default function ProductGrid2() {
 
   return (
     <section className={styles.container} aria-labelledby="new-at-obat">
+      {/* HEADER */}
       <div className={styles.header}>
         <h2 id="new-at-obat" className={styles.title}>
           New at OBAT
         </h2>
-
         <Link href="/products" className={styles.viewAll} aria-label="View all products">
           View all
         </Link>
       </div>
 
-      <div
-        className={styles.grid}
-        role="list"
-        aria-label="New products"
-      >
+      {/* PRODUCT GRID */}
+      <div className={styles.grid} role="list" aria-label="New products">
         {products.map((product) => {
-          const priceLabel = formatPrice ? formatPrice(product.price) : `KES ${product.price}`;
+          const priceLabel = formatPrice?.(product.price) ?? `KES ${product.price}`;
 
           return (
             <motion.article
@@ -89,11 +81,12 @@ export default function ProductGrid2() {
               tabIndex={0}
               onKeyDown={handleCardKey(router, product.id)}
               onClick={() => navigateToProduct(router, product.id)}
-              whileHover={{ translateY: -6 }}
-              whileTap={{ scale: 0.995 }}
+              whileHover={{ translateY: -6, boxShadow: "0 8px 16px rgba(0,0,0,0.08)" }}
+              whileTap={{ scale: 0.985 }}
               layout
               aria-labelledby={`product-title-${product.id}`}
             >
+              {/* IMAGE & QUICK ACTIONS */}
               <div className={styles.media}>
                 <Link
                   href={`/products2/${product.id}`}
@@ -128,7 +121,6 @@ export default function ProductGrid2() {
                     className={styles.iconBtn}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // quick view placeholder — replace with modal controller
                       router.push(`/products2/${product.id}?quickView=1`);
                     }}
                     aria-label={`Quick view ${product.name}`}
@@ -139,6 +131,7 @@ export default function ProductGrid2() {
                 </div>
               </div>
 
+              {/* PRODUCT INFO */}
               <div className={styles.content}>
                 <h3 id={`product-title-${product.id}`} className={styles.productName}>
                   <Link
@@ -174,4 +167,3 @@ export default function ProductGrid2() {
     </section>
   );
 }
-
