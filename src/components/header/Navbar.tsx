@@ -59,7 +59,6 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Nervous", path: "/system/cns" },
       { label: "Oral Hygiene", path: "/system/oral" },
       { label: "MSK", path: "/system/msk" },
-      { label: "Sexual", path: "/system/sexual" },
     ],
   },
   { label: "Offers", key: "offers", path: "/offers" },

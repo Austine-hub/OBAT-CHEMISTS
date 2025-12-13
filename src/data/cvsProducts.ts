@@ -1,21 +1,26 @@
+// ============================================================================
 // src/data/cvsProducts.ts
+// Central Source of Truth for CVS Products (Optimized + DRY + MVC Friendly)
+// ============================================================================
+
 import { StaticImageData } from "next/image";
 
 // ===============================
-// ✅ Type Definition
+// 🔹 Type Definitions
 // ===============================
 export interface Product {
   id: number;
   name: string;
+  slug: string;
   image: string | StaticImageData;
   price: number;
   category: string;
-  stock: string;
   subCategory: string;
+  inStock: boolean;
 }
 
 // ===============================
-// ✅ Static Image Imports
+// 🔹 Static Image Imports
 // ===============================
 import amlodipineImg from "../assets/products/BloodPressure/Amlodipine.png";
 import atenololImg from "../assets/products/BloodPressure/Atenolol.png";
@@ -32,39 +37,101 @@ import telmisartanImg from "../assets/products/BloodPressure/Telmisartan.png";
 import valsartanImg from "../assets/products/BloodPressure/Valsartan.png";
 
 // ===============================
-// ✅ Product Data
+// 🔹 Helper: Generate Slug
 // ===============================
-export const cvsProducts: Product[] = [
-  // Hypertension
-  { id: 1, name: "Amlodipine", image: amlodipineImg, price: 2395, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 2, name: "Atenolol", image: atenololImg, price: 2747, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 3, name: "Bisoprolol", image: bisoprololImg, price: 1714, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 4, name: "Candesartan", image: candesartanImg, price: 1420, category: "Cardiovascular", subCategory:"Hypertension", stock: "In Stock" },
-  { id: 5, name: "Furosemide", image: furosemideImg, price: 1200, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 6, name: "Spironolactone", image: spironolactoneImg, price: 1350, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 7, name: "Enalapril", image: enalaprilImg, price: 1520, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 8, name: "Telmisartan", image: telmisartanImg, price: 1380, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 9, name: "Valsartan", image: valsartanImg, price: 1420, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 10, name: "Losartan", image: losartanImg, price: 1470, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 11, name: "Chlorthalidone", image: chlorthalidoneImg, price: 1320, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 12, name: "Hydrochlorothiazide", image: hydrochlorothiazideImg, price: 1410, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
-  { id: 13, name: "Nifedipine", image: nifedipineImg, price: 1450, category: "Cardiovascular", subCategory: "Hypertension", stock: "In Stock" },
+const slugify = (name: string) =>
+  name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-  // CHF
-  { id: 14, name: "Candesartan", image: candesartanImg, price: 1420, category: "Cardiovascular", subCategory: "Congestive Heart Failure", stock: "In Stock" },
-  { id: 15, name: "Furosemide", image: furosemideImg, price: 1200, category: "Cardiovascular", subCategory: "Congestive Heart Failure", stock: "In Stock" },
-  { id: 16, name: "Spironolactone", image: spironolactoneImg, price: 1350, category: "Cardiovascular", subCategory: "Congestive Heart Failure", stock: "In Stock" },
+// ===============================
+// 🔹 Canonical Product Definitions
+// (One source of truth — no duplication)
+// ===============================
+const baseProducts = {
+  Amlodipine: { name: "Amlodipine", image: amlodipineImg, price: 2395 },
+  Atenolol: { name: "Atenolol", image: atenololImg, price: 2747 },
+  Bisoprolol: { name: "Bisoprolol", image: bisoprololImg, price: 1714 },
+  Candesartan: { name: "Candesartan", image: candesartanImg, price: 1420 },
+  Furosemide: { name: "Furosemide", image: furosemideImg, price: 1200 },
+  Spironolactone: { name: "Spironolactone", image: spironolactoneImg, price: 1350 },
+  Enalapril: { name: "Enalapril", image: enalaprilImg, price: 1520 },
+  Telmisartan: { name: "Telmisartan", image: telmisartanImg, price: 1380 },
+  Valsartan: { name: "Valsartan", image: valsartanImg, price: 1420 },
+  Losartan: { name: "Losartan", image: losartanImg, price: 1470 },
+  Chlorthalidone: { name: "Chlorthalidone", image: chlorthalidoneImg, price: 1320 },
+  Hydrochlorothiazide: {
+    name: "Hydrochlorothiazide",
+    image: hydrochlorothiazideImg,
+    price: 1410,
+  },
+  Nifedipine: { name: "Nifedipine", image: nifedipineImg, price: 1450 },
+};
 
-  // CAD
-  { id: 17, name: "Enalapril", image: enalaprilImg, price: 1520, category: "Cardiovascular", subCategory: "Coronary Artery Disease", stock: "In Stock" },
-  { id: 18, name: "Telmisartan", image: telmisartanImg, price: 1380, category: "Cardiovascular", subCategory: "Coronary Artery Disease", stock: "In Stock" },
-  { id: 19, name: "Valsartan", image: valsartanImg, price: 1420, category: "Cardiovascular", subCategory: "Coronary Artery Disease", stock: "In Stock" },
+// ===============================
+// 🔹 Category Mapping (DRY)
+// ===============================
+const categoryMap = {
+  Hypertension: [
+    "Amlodipine",
+    "Atenolol",
+    "Bisoprolol",
+    "Candesartan",
+    "Furosemide",
+    "Spironolactone",
+    "Enalapril",
+    "Telmisartan",
+    "Valsartan",
+    "Losartan",
+    "Chlorthalidone",
+    "Hydrochlorothiazide",
+    "Nifedipine",
+  ],
 
-  // DVT
-  { id: 20, name: "Losartan", image: losartanImg, price: 1470, category: "Cardiovascular", subCategory: "DVT", stock: "In Stock" },
-  { id: 21, name: "Chlorthalidone", image: chlorthalidoneImg, price: 1320, category: "Cardiovascular", subCategory: "DVT", stock: "In Stock" },
+  "Congestive Heart Failure": ["Candesartan", "Furosemide", "Spironolactone"],
 
-  // Other
-  { id: 22, name: "Hydrochlorothiazide", image: hydrochlorothiazideImg, price: 1410, category: "Cardiovascular", subCategory: "Other Cardiac Conditions", stock: "In Stock" },
-  { id: 23, name: "Nifedipine", image: nifedipineImg, price: 1450, category: "Cardiovascular", subCategory: "Other Cardiac Conditions", stock: "In Stock" },
-];
+  "Coronary Artery Disease": ["Enalapril", "Telmisartan", "Valsartan"],
+
+  DVT: ["Losartan", "Chlorthalidone"],
+
+  "Other Cardiac Conditions": ["Hydrochlorothiazide", "Nifedipine"],
+};
+
+// ===============================
+// 🔹 Generate Final Product Array (MVC-friendly)
+// ===============================
+let idCounter = 1;
+
+export const cvsProducts: Product[] = Object.entries(categoryMap).flatMap(
+  ([subCategory, productNames]) =>
+    productNames.map((productName) => {
+      const base = baseProducts[productName as keyof typeof baseProducts];
+
+      return {
+        id: idCounter++,
+        name: base.name,
+        slug: slugify(base.name),
+        image: base.image,
+        price: base.price,
+        category: "Cardiovascular",
+        subCategory,
+        inStock: true,
+      } satisfies Product;
+    })
+);
+
+// ===============================
+// 🔹 Controller-Style Helpers (MVC)
+// ===============================
+export const getProductBySlug = (slug: string): Product | undefined =>
+  cvsProducts.find((p) => p.slug === slug);
+
+export const getSimilarProducts = (product: Product, limit = 4): Product[] =>
+  cvsProducts
+    .filter(
+      (p) =>
+        p.subCategory === product.subCategory &&
+        p.slug !== product.slug
+    )
+    .slice(0, limit);
+
+export const getProductsByCategory = (subCategory: string): Product[] =>
+  cvsProducts.filter((p) => p.subCategory === subCategory);

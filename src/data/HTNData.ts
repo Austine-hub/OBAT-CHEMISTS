@@ -1,56 +1,73 @@
 // ============================================================================
-// 💊 HTNData.ts — Central Data Source for Hypertension Products
-// Serves as the Model layer for HTNDetails.tsx & HTN.tsx
+// HTNData.ts — Hypertension Products Data Layer (Model)
+// MVC • DRY • Type-Safe • Optimized • Modern Next.js 16
 // ============================================================================
+
 import type { StaticImageData } from "next/image";
 
-// ===============================
-// ✅ Static Image Imports
-// ===============================
-import amlodipineImg from "../assets/products/BloodPressure/Amlodipine.png";
-import atenololImg from "../assets/products/BloodPressure/Atenolol.png";
-import bisoprololImg from "../assets/products/BloodPressure/Bisoprolol.png";
-import candesartanImg from "../assets/products/BloodPressure/Candesartan.png";
-import chlorthalidoneImg from "../assets/products/BloodPressure/Chlorthalidone.png";
-import enalaprilImg from "../assets/products/BloodPressure/Enalapril.png";
-import furosemideImg from "../assets/products/BloodPressure/Furosemide.png";
-import hydrochlorothiazideImg from "../assets/products/BloodPressure/Hydrochlorothiazide.png";
-import losartanImg from "../assets/products/BloodPressure/Losartan.png";
-import nifedipineImg from "../assets/products/BloodPressure/Nifedipine.png";
-import spironolactoneImg from "../assets/products/BloodPressure/Spironolactone.png";
-import telmisartanImg from "../assets/products/BloodPressure/Telmisartan.png";
-import valsartanImg from "../assets/products/BloodPressure/Valsartan.png";
+// ============================================================================
+// Static Imports (Batch Import Pattern)
+// ============================================================================
+const images = {
+  amlodipine: require("../assets/products/BloodPressure/Amlodipine.png"),
+  atenolol: require("../assets/products/BloodPressure/Atenolol.png"),
+  bisoprolol: require("../assets/products/BloodPressure/Bisoprolol.png"),
+  candesartan: require("../assets/products/BloodPressure/Candesartan.png"),
+  chlorthalidone: require("../assets/products/BloodPressure/Chlorthalidone.png"),
+  enalapril: require("../assets/products/BloodPressure/Enalapril.png"),
+  furosemide: require("../assets/products/BloodPressure/Furosemide.png"),
+  hydrochlorothiazide: require("../assets/products/BloodPressure/Hydrochlorothiazide.png"),
+  losartan: require("../assets/products/BloodPressure/Losartan.png"),
+  nifedipine: require("../assets/products/BloodPressure/Nifedipine.png"),
+  spironolactone: require("../assets/products/BloodPressure/Spironolactone.png"),
+  telmisartan: require("../assets/products/BloodPressure/Telmisartan.png"),
+  valsartan: require("../assets/products/BloodPressure/Valsartan.png"),
+} as const;
 
 // ============================================================================
-// 🧩 Type Definitions
+// Type Definitions
 // ============================================================================
+export type ProductCategory =
+  | "Calcium Channel Blocker"
+  | "Beta Blocker"
+  | "Angiotensin II Receptor Blocker (ARB)"
+  | "Thiazide-like Diuretic"
+  | "ACE Inhibitor"
+  | "Loop Diuretic"
+  | "Thiazide Diuretic"
+  | "Potassium-Sparing Diuretic";
+
+export type StockStatus = "In Stock" | "Out of Stock";
+export type Badge = "SALE" | "NEW" | "HOT";
+
+export interface Usage {
+  dosage: string;
+  administration: string;
+  storage: string;
+  warning: string;
+}
 
 export interface Product {
   id: number;
   name: string;
+  slug: string;
+  manufacturer: string;
+  category: ProductCategory;
   price: number;
   originalPrice?: number;
-  category: string;
-  stock: "In Stock" | "Out of Stock";
+  stock: StockStatus;
   image: StaticImageData | string;
   rating: number;
-  badge?: string;
-  manufacturer: string;
+  badge?: Badge;
   description: string;
   features: string[];
-  usage: {
-    dosage: string;
-    administration: string;
-    storage: string;
-    warning: string;
-  };
+  usage: Usage;
 }
 
 // ============================================================================
-// 💊 Product Catalog — Hypertension Drugs
+// Product Catalog (Data-Driven Approach)
 // ============================================================================
-
-export const htnProducts: Product[] = [
+const productData: Omit<Product, "slug">[] = [
   {
     id: 1,
     name: "Norvasc (Amlodipine)",
@@ -59,22 +76,22 @@ export const htnProducts: Product[] = [
     price: 3200,
     originalPrice: 3500,
     stock: "In Stock",
-    image: amlodipineImg,
+    image: images.amlodipine,
     rating: 4.7,
     badge: "SALE",
     description:
-      "Norvasc (Amlodipine) is a long-acting calcium channel blocker used to treat high blood pressure and angina. It relaxes blood vessels, allowing blood to flow more easily and reducing cardiac workload.",
+      "Long-acting calcium channel blocker for hypertension and angina. Relaxes blood vessels, reducing cardiac workload with once-daily dosing.",
     features: [
       "Clinically proven calcium channel blocker",
-      "Effective for hypertension and angina management",
-      "Once-daily dosing with sustained control",
-      "Well-tolerated and recommended by global guidelines",
+      "Effective for hypertension and angina",
+      "Once-daily sustained control",
+      "Well-tolerated, guideline-recommended",
     ],
     usage: {
       dosage: "5–10 mg once daily as prescribed",
-      administration: "Can be taken with or without food",
-      storage: "Store below 30°C in a dry place away from light",
-      warning: "Do not stop abruptly; taper under medical supervision",
+      administration: "With or without food",
+      storage: "Below 30°C, dry place, away from light",
+      warning: "Do not stop abruptly; taper under supervision",
     },
   },
   {
@@ -85,21 +102,21 @@ export const htnProducts: Product[] = [
     price: 2800,
     originalPrice: 3000,
     stock: "In Stock",
-    image: atenololImg,
+    image: images.atenolol,
     rating: 4.6,
     description:
-      "Tenormin (Atenolol) is a cardioselective beta-blocker that lowers blood pressure by reducing heart rate and cardiac output. It is also used for angina and post-myocardial infarction management.",
+      "Cardioselective beta-blocker lowering blood pressure by reducing heart rate. Used for angina and post-MI management.",
     features: [
-      "Cardioselective beta-blocker with fewer respiratory effects",
-      "Effective in long-term hypertension control",
-      "Improves survival post-heart attack",
-      "Once-daily dosage for convenience",
+      "Cardioselective with fewer respiratory effects",
+      "Long-term hypertension control",
+      "Improves post-heart attack survival",
+      "Once-daily convenience",
     ],
     usage: {
-      dosage: "25–100 mg once daily as directed",
-      administration: "Take with water at the same time each day",
-      storage: "Keep below 25°C, protected from moisture",
-      warning: "Avoid sudden withdrawal to prevent rebound hypertension",
+      dosage: "25–100 mg once daily",
+      administration: "With water, same time daily",
+      storage: "Below 25°C, protected from moisture",
+      warning: "Avoid sudden withdrawal to prevent rebound",
     },
   },
   {
@@ -110,22 +127,22 @@ export const htnProducts: Product[] = [
     price: 3400,
     originalPrice: 3700,
     stock: "In Stock",
-    image: bisoprololImg,
+    image: images.bisoprolol,
     rating: 4.9,
     badge: "NEW",
     description:
-      "Concor (Bisoprolol) is a highly selective beta-1 blocker used in hypertension and chronic heart failure. It improves cardiac efficiency while minimizing respiratory side effects.",
+      "Highly selective beta-1 blocker for hypertension and heart failure. Improves cardiac efficiency with minimal respiratory effects.",
     features: [
       "Highly cardioselective beta-1 blocker",
-      "Proven efficacy in heart failure and hypertension",
+      "Proven in heart failure and hypertension",
       "Minimizes fatigue and dizziness",
-      "Trusted European-made formulation",
+      "Trusted European formulation",
     ],
     usage: {
-      dosage: "5–10 mg daily or as advised by physician",
-      administration: "Take in the morning before meals",
-      storage: "Store below 30°C, away from direct sunlight",
-      warning: "Consult your doctor before changing dosage",
+      dosage: "5–10 mg daily or as advised",
+      administration: "Morning, before meals",
+      storage: "Below 30°C, away from sunlight",
+      warning: "Consult doctor before dosage changes",
     },
   },
   {
@@ -136,21 +153,21 @@ export const htnProducts: Product[] = [
     price: 3600,
     originalPrice: 3850,
     stock: "In Stock",
-    image: candesartanImg,
+    image: images.candesartan,
     rating: 4.8,
     description:
-      "Atacand (Candesartan) is an ARB that relaxes blood vessels and helps control blood pressure effectively. It reduces the risk of stroke and heart failure in hypertensive patients.",
+      "Potent ARB relaxing blood vessels for effective BP control. Reduces stroke and heart failure risk in hypertensive patients.",
     features: [
-      "Potent ARB with long duration of action",
+      "Long-acting ARB with sustained effect",
       "Reduces cardiovascular events",
       "Suitable for diabetic and elderly patients",
       "Minimal electrolyte imbalance risk",
     ],
     usage: {
       dosage: "8–32 mg once daily",
-      administration: "Can be taken with or without food",
-      storage: "Store at room temperature (15–30°C)",
-      warning: "Avoid use during pregnancy",
+      administration: "With or without food",
+      storage: "Room temperature (15–30°C)",
+      warning: "Avoid during pregnancy",
     },
   },
   {
@@ -161,21 +178,21 @@ export const htnProducts: Product[] = [
     price: 3000,
     originalPrice: 3200,
     stock: "In Stock",
-    image: chlorthalidoneImg,
+    image: images.chlorthalidone,
     rating: 4.5,
     description:
-      "Hygroton (Chlorthalidone) is a thiazide-like diuretic that helps the kidneys remove excess salt and water, lowering blood pressure and reducing fluid retention.",
+      "Thiazide-like diuretic removing excess salt and water. Lowers BP and reduces fluid retention with long half-life.",
     features: [
-      "Effective in combination therapy for hypertension",
-      "Long half-life for once-daily dosing",
-      "Reduces stroke risk in hypertensive patients",
-      "Preferred diuretic in major guidelines",
+      "Effective in combination therapy",
+      "Long half-life, once-daily dosing",
+      "Reduces stroke risk",
+      "Preferred diuretic in guidelines",
     ],
     usage: {
       dosage: "12.5–25 mg daily",
-      administration: "Take in the morning with water",
-      storage: "Keep tightly closed below 30°C",
-      warning: "Monitor electrolytes during long-term use",
+      administration: "Morning with water",
+      storage: "Tightly closed, below 30°C",
+      warning: "Monitor electrolytes long-term",
     },
   },
   {
@@ -186,21 +203,21 @@ export const htnProducts: Product[] = [
     price: 3100,
     originalPrice: 3400,
     stock: "In Stock",
-    image: enalaprilImg,
+    image: images.enalapril,
     rating: 4.4,
     description:
-      "Renitec (Enalapril) is an ACE inhibitor that relaxes blood vessels and reduces cardiac workload. It’s used in hypertension and heart failure management.",
+      "ACE inhibitor relaxing blood vessels, reducing cardiac workload. Used in hypertension and heart failure management.",
     features: [
-      "ACE inhibitor with proven mortality benefit",
-      "Effective in both hypertension and heart failure",
+      "Proven mortality benefit",
+      "Effective in hypertension and heart failure",
       "Protective in diabetic nephropathy",
       "Improves arterial compliance",
     ],
     usage: {
       dosage: "5–20 mg once or twice daily",
-      administration: "Take consistently at the same time daily",
-      storage: "Store below 25°C, away from moisture",
-      warning: "Discontinue if persistent dry cough develops",
+      administration: "Same time daily",
+      storage: "Below 25°C, away from moisture",
+      warning: "Discontinue if persistent dry cough",
     },
   },
   {
@@ -211,20 +228,20 @@ export const htnProducts: Product[] = [
     price: 2700,
     originalPrice: 2950,
     stock: "In Stock",
-    image: furosemideImg,
+    image: images.furosemide,
     rating: 4.6,
     description:
-      "Lasix (Furosemide) is a potent loop diuretic used in managing hypertension and edema due to heart failure, liver, or kidney disease.",
+      "Potent loop diuretic for hypertension and edema from heart failure, liver, or kidney disease.",
     features: [
       "Rapid-acting loop diuretic",
-      "Reduces fluid overload and blood pressure",
-      "Relieves symptoms of heart failure",
-      "Trusted brand with decades of clinical use",
+      "Reduces fluid overload and BP",
+      "Relieves heart failure symptoms",
+      "Decades of trusted clinical use",
     ],
     usage: {
       dosage: "20–80 mg once or twice daily",
-      administration: "Take in the morning to avoid nocturia",
-      storage: "Keep in original packaging, below 30°C",
+      administration: "Morning to avoid nocturia",
+      storage: "Original packaging, below 30°C",
       warning: "Monitor electrolytes and hydration",
     },
   },
@@ -236,21 +253,21 @@ export const htnProducts: Product[] = [
     price: 2900,
     originalPrice: 3100,
     stock: "In Stock",
-    image: hydrochlorothiazideImg,
+    image: images.hydrochlorothiazide,
     rating: 4.3,
     description:
-      "Hydrosan (Hydrochlorothiazide) promotes sodium and water excretion to help lower blood pressure and prevent fluid retention.",
+      "Promotes sodium and water excretion to lower BP and prevent fluid retention. First-line hypertension therapy.",
     features: [
-      "Common first-line therapy for hypertension",
-      "Economical and effective diuretic",
-      "Works synergistically with other agents",
+      "First-line therapy for hypertension",
+      "Economical and effective",
+      "Synergistic with other agents",
       "Once-daily oral administration",
     ],
     usage: {
       dosage: "12.5–50 mg once daily",
-      administration: "Preferably in the morning",
-      storage: "Keep tightly closed below 30°C",
-      warning: "Avoid excessive sunlight exposure",
+      administration: "Preferably in morning",
+      storage: "Tightly closed, below 30°C",
+      warning: "Avoid excessive sunlight",
     },
   },
   {
@@ -261,21 +278,21 @@ export const htnProducts: Product[] = [
     price: 3300,
     originalPrice: 3500,
     stock: "In Stock",
-    image: losartanImg,
+    image: images.losartan,
     rating: 4.8,
     description:
-      "Cozaar (Losartan) is an ARB that helps lower blood pressure and protect the kidneys, particularly in diabetic patients.",
+      "ARB lowering BP and protecting kidneys, especially in diabetic patients. Minimal cough risk compared to ACE inhibitors.",
     features: [
-      "Well-tolerated with minimal cough risk",
-      "Renoprotective benefits in diabetes",
+      "Well-tolerated, minimal cough risk",
+      "Renoprotective in diabetes",
       "Once-daily administration",
       "Clinically validated efficacy",
     ],
     usage: {
       dosage: "50–100 mg daily",
       administration: "With or without food",
-      storage: "Store at room temperature below 30°C",
-      warning: "Avoid in pregnancy; monitor kidney function",
+      storage: "Room temperature, below 30°C",
+      warning: "Avoid in pregnancy; monitor kidneys",
     },
   },
   {
@@ -286,21 +303,21 @@ export const htnProducts: Product[] = [
     price: 3200,
     originalPrice: 3450,
     stock: "In Stock",
-    image: nifedipineImg,
+    image: images.nifedipine,
     rating: 4.7,
     description:
-      "Adalat (Nifedipine) relaxes and widens blood vessels to improve blood flow, reducing blood pressure and angina symptoms.",
+      "Relaxes and widens blood vessels for improved flow. Reduces BP and angina symptoms with high safety profile.",
     features: [
       "Fast-acting calcium channel blocker",
       "Effective in chronic and acute hypertension",
       "Useful for pregnancy-induced hypertension",
-      "High safety profile in long-term use",
+      "High long-term safety profile",
     ],
     usage: {
       dosage: "10–30 mg two to three times daily",
       administration: "Swallow whole, do not crush",
-      storage: "Keep below 25°C in a dry place",
-      warning: "Avoid abrupt withdrawal to prevent BP rebound",
+      storage: "Below 25°C, dry place",
+      warning: "Avoid abrupt withdrawal",
     },
   },
   {
@@ -311,20 +328,20 @@ export const htnProducts: Product[] = [
     price: 3400,
     originalPrice: 3700,
     stock: "In Stock",
-    image: spironolactoneImg,
+    image: images.spironolactone,
     rating: 4.9,
     description:
-      "Aldactone (Spironolactone) is a potassium-sparing diuretic that counteracts aldosterone to reduce fluid retention and blood pressure.",
+      "Potassium-sparing diuretic countering aldosterone to reduce fluid retention and BP. Used in resistant hypertension.",
     features: [
-      "Prevents potassium loss compared to thiazides",
-      "Used in resistant hypertension",
-      "Improves outcomes in heart failure",
-      "Supports hormonal balance in hyperaldosteronism",
+      "Prevents potassium loss vs thiazides",
+      "Effective in resistant hypertension",
+      "Improves heart failure outcomes",
+      "Supports hormonal balance",
     ],
     usage: {
       dosage: "25–100 mg daily",
-      administration: "Take with food to reduce GI upset",
-      storage: "Keep in a cool, dry place",
+      administration: "With food to reduce GI upset",
+      storage: "Cool, dry place",
       warning: "Monitor potassium and renal function",
     },
   },
@@ -336,20 +353,20 @@ export const htnProducts: Product[] = [
     price: 3550,
     originalPrice: 3800,
     stock: "In Stock",
-    image: telmisartanImg,
+    image: images.telmisartan,
     rating: 4.8,
     description:
-      "Micardis (Telmisartan) is an ARB known for its long half-life and 24-hour blood pressure control, offering organ protection and improved compliance.",
+      "ARB with long half-life providing 24-hour BP control. Offers organ protection with excellent tolerability.",
     features: [
-      "Provides sustained 24-hour BP control",
+      "Sustained 24-hour BP control",
       "Excellent tolerability profile",
-      "Metabolically neutral (safe in diabetics)",
-      "Once-daily dosing convenience",
+      "Metabolically neutral (diabetic-safe)",
+      "Once-daily convenience",
     ],
     usage: {
       dosage: "40–80 mg once daily",
-      administration: "Can be taken with or without meals",
-      storage: "Store below 30°C",
+      administration: "With or without meals",
+      storage: "Below 30°C",
       warning: "Do not use during pregnancy",
     },
   },
@@ -361,40 +378,74 @@ export const htnProducts: Product[] = [
     price: 3700,
     originalPrice: 4000,
     stock: "In Stock",
-    image: valsartanImg,
+    image: images.valsartan,
     rating: 4.9,
     description:
-      "Diovan (Valsartan) is an ARB used to manage hypertension and improve survival post-heart failure. It blocks angiotensin II to relax vessels and reduce strain on the heart.",
+      "ARB for hypertension and post-heart failure management. Blocks angiotensin II to relax vessels and reduce cardiac strain.",
     features: [
-      "Clinically proven in hypertension and heart failure",
+      "Proven in hypertension and heart failure",
       "Reduces hospitalizations and mortality",
-      "Excellent safety profile in long-term therapy",
+      "Excellent long-term safety profile",
       "Trusted by cardiologists worldwide",
     ],
     usage: {
       dosage: "80–160 mg once daily",
       administration: "With or without food",
-      storage: "Store below 25°C",
-      warning: "Avoid use during pregnancy",
+      storage: "Below 25°C",
+      warning: "Avoid during pregnancy",
     },
   },
 ];
 
 // ============================================================================
-// 🛠️ Utility Functions — Model Helpers
+// Auto-Generate Slugs and Export Products
+// ============================================================================
+export const htnProducts: Product[] = productData.map((p) => ({
+  ...p,
+  slug: p.name.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-"),
+}));
+
+// ============================================================================
+// Utility Functions (Model Helpers)
 // ============================================================================
 
-/** Formats price for display (KES with commas). */
-export const formatPrice = (price: number): string => {
-  return `KES ${price.toLocaleString()}`;
-};
+/** Format price in KES with locale */
+export const formatPrice = (price: number) => `KES ${price.toLocaleString()}`;
 
-/** Retrieves a product by ID. */
-export const getProductById = (id: number): Product | undefined =>
+/** Get product by slug */
+export const getProductBySlug = (slug: string) =>
+  htnProducts.find((p) => p.slug === slug);
+
+/** Get product by ID */
+export const getProductById = (id: number) =>
   htnProducts.find((p) => p.id === id);
 
-/** Retrieves similar products by category (excluding the given ID). */
-export const getSimilarProducts = (category: string, id: number): Product[] =>
-  htnProducts.filter((p) => p.category === category && p.id !== id).slice(0, 4);
+/** Get similar products by category (excluding current) */
+export const getSimilarProducts = (category: string, excludeId: number, limit = 4) =>
+  htnProducts
+    .filter((p) => p.category === category && p.id !== excludeId)
+    .slice(0, limit);
+
+/** Get products by category */
+export const getProductsByCategory = (category: ProductCategory) =>
+  htnProducts.filter((p) => p.category === category);
+
+/** Get products in stock */
+export const getInStockProducts = () =>
+  htnProducts.filter((p) => p.stock === "In Stock");
+
+/** Get products with badge */
+export const getProductsWithBadge = (badge: Badge) =>
+  htnProducts.filter((p) => p.badge === badge);
+
+/** Search products by name */
+export const searchProducts = (query: string) =>
+  htnProducts.filter((p) =>
+    p.name.toLowerCase().includes(query.toLowerCase())
+  );
+
+/** Get all unique categories */
+export const getCategories = () =>
+  Array.from(new Set(htnProducts.map((p) => p.category)));
 
 export default htnProducts;

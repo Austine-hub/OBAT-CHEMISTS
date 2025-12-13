@@ -1,184 +1,13 @@
-// src/data/beauty.ts
-// TEMPLATE FOR BEAUTY/MAKEUP PRODUCTS
+// src/data/beautyData.ts
+// ============================================================================
+// BEAUTY DATA — MODEL + CONTROLLER (Clean MVC, DRY, Type-Safe, Error-Proof)
+// ============================================================================
 
-// NOTE: This file uses StaticImageData for Next.js image imports, but is compatible with standard string paths.
 import type { StaticImageData } from "next/image";
 
-// ------------------------------------------------------------
-// 📦 Type Definitions for Beauty/Makeup Products
-// ------------------------------------------------------------
-
-export type ProductCategory =
-  | "Foundation"
-  | "Concealer"
-  | "Lipstick"
-  | "Mascara"
-  | "Eyeshadow Palette"
-  | "Blush"
-  | "Highlighter"
-  | "Setting Spray"
-  | "Eyeliner"
-  | "Lip Liner";
-
-export type SkinType =
-  | "All"
-  | "Oily"
-  | "Dry"
-  | "Combination"
-  | "Sensitive"
-  | "Normal";
-
-export type MakeupConcern =
-  | "Oil Control"
-  | "Longevity"
-  | "Dry Patches"
-  | "Uneven Tone"
-  | "Fine Lines"
-  | "Full Coverage"
-  | "Hydration"
-  | "Smudging"
-  | "Fading"
-  | "Dullness";   // ✅ Add this
-
-
-export type ProductTag =
-  | "Bestseller"
-  | "New Arrival"
-  | "Limited Edition"
-  | "Award Winner"
-  | "Cruelty-Free"
-  | "Vegan"
-  | "Matte"
-  | "Glowy Finish"
-  | "Waterproof"
-  | "Non-Comedogenic"
-  | "Dermatologist Tested"  // ✅ Add this
-  | "Hypoallergenic";  // ✅ Add this
-  
-
-
-export interface ProductVariant {
-  id: string;
-  name: string;
-  price: number;
-  oldPrice?: number;
-  inStock: boolean;
-  stockCount: number;
-  sku?: string;
-}
-
-export interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-  helpful: number;
-  date: string;
-}
-
-export interface ReviewResponse {
-  id: string;
-  userName: string;
-  date: string;
-  comment: string;
-  isOfficial: boolean;
-}
-
-export interface Review {
-  id: string;
-  productId: string;
-  userId?: string;
-  userName: string;
-  userAvatar?: string;
-  rating: number;
-  date: string;
-  title: string;
-  comment: string;
-  verified: boolean;
-  helpful: number;
-  images?: string[];
-  skinType?: SkinType;
-  ageRange?: string;
-  responses?: ReviewResponse[];
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  category: ProductCategory;
-  slug: string;
-  image: string | StaticImageData; // ✅ Accept both string and StaticImageData
-  images: (string | StaticImageData)[];
-  videoUrl?: string;
-  price: number;
-  oldPrice?: number;
-  discount?: number;
-  currency: string;
-  rating: number;
-  reviewCount: number;
-  questionCount?: number;
-  description: string;
-  shortDescription?: string;
-  keyIngredients: string[]; // Key selling points (e.g., Vitamin E, Hyaluronic Acid)
-  fullIngredientList?: string;
-  benefits: string[];
-  howToUse: string[];
-  skinTypes: SkinType[];
-  skinConcerns?: MakeupConcern[]; // Changed from SkinConcern
-  size: string;
-  variants?: ProductVariant[];
-  inStock: boolean;
-  stockCount: number;
-  lowStockThreshold?: number;
-  restockDate?: string;
-  isFeatured?: boolean;
-  isNew?: boolean;
-  tags?: ProductTag[];
-  collections?: string[];
-  metaTitle?: string;
-  metaDescription?: string;
-  keywords?: string[];
-  warnings?: string[];
-  faq?: FAQ[];
-  relatedProducts?: string[];
-  bundleWith?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface CartItem {
-  productId: string;
-  variantId?: string;
-  quantity: number;
-  addedAt: string;
-}
-
-export interface WishlistItem {
-  productId: string;
-  addedAt: string;
-}
-
-export interface SearchFilters {
-  categories?: ProductCategory[];
-  brands?: string[];
-  skinTypes?: SkinType[];
-  skinConcerns?: MakeupConcern[]; // Changed from SkinConcern
-  priceRange?: { min: number; max: number };
-  rating?: number;
-  inStock?: boolean;
-  tags?: ProductTag[];
-}
-
-export interface SortOption {
-  value: string;
-  label: string;
-}
-
-/* ============================
-    IMAGE IMPORTS (PLACEHOLDERS)
-    Note: Replace these with actual image imports in your project
-    ============================ */
-
+/* ============================================================================
+   IMAGE IMPORTS (CENTRALIZED ASSET REGISTRY)
+============================================================================ */
 import pic1 from "../assets/products/cerave-cleanser.png";
 import pic2 from "../assets/products/ordinary-serum.png";
 import pic3 from "../assets/products/laroche-moisturizer.png";
@@ -200,68 +29,202 @@ import pic18 from "../assets/products/laneige-sleeping mask.png";
 import pic19 from "../assets/products/skinfix-barrier.png";
 import pic20 from "../assets/products/summer-fridays.png";
 
-/* ============================
-    MOCK BEAUTY PRODUCTS (20 items)
-    ============================ */
+/* ============================================================================
+   STATIC IMAGE LIBRARY — Single Source of Truth
+============================================================================ */
+export const IMAGE_LIBRARY = {
+  pic1,
+  pic2,
+  pic3,
+  pic4,
+  pic5,
+  pic6,
+  pic7,
+  pic8,
+  pic9,
+  pic10,
+  pic11,
+  pic12,
+  pic13,
+  pic14,
+  pic15,
+  pic16,
+  pic17,
+  pic18,
+  pic19,
+  pic20,
+} as const;
 
-export const productsData: Product[] = [
+export type ImageKeys = keyof typeof IMAGE_LIBRARY;
+
+/* ============================================================================
+   ENUM-LIKE CONSTANTS
+============================================================================ */
+export const PRODUCT_CATEGORIES = {
+  FOUNDATION: "Foundation",
+  MASCARA: "Mascara",
+  LIPSTICK: "Lipstick",
+  CONCEALER: "Concealer",
+  EYESHADOW_PALETTE: "Eyeshadow Palette",
+  SETTING_SPRAY: "Setting Spray",
+  BLUSH: "Blush",
+  HIGHLIGHTER: "Highlighter",
+  LIP_LINER: "Lip Liner",
+  EYELINER: "Eyeliner",
+  PRIMER: "Primer",
+  BROW_GEL: "Brow Gel",
+  LIP_GLOSS: "Lip Gloss",
+  BRONZER: "Bronzer",
+  SETTING_POWDER: "Setting Powder",
+} as const;
+
+export type ProductCategory =
+  (typeof PRODUCT_CATEGORIES)[keyof typeof PRODUCT_CATEGORIES];
+
+export type SkinType =
+  | "All"
+  | "Oily"
+  | "Combination"
+  | "Normal"
+  | "Dry"
+  | "Sensitive";
+
+export type ProductTag =
+  | "Bestseller"
+  | "Matte"
+  | "Non-Comedogenic"
+  | "Cruelty-Free"
+  | "Award Winner"
+  | "Waterproof"
+  | "Dermatologist Tested"
+  | "Glowy Finish"
+  | "Vegan"
+  | "New Arrival"
+  | "Hypoallergenic";
+
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  helpful: number;
+  date: string;
+}
+
+/* ============================================================================
+   PRODUCT MODEL
+============================================================================ */
+export interface Product {
+  gallery?: (string | StaticImageData)[];
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  category: ProductCategory;
+
+  image: StaticImageData;
+  images: readonly StaticImageData[];
+
+  price: number;
+  oldPrice: number;
+  discount: number;
+  currency: "KSh" | "USD" | (string & {});
+
+  rating: number;
+  reviewCount: number;
+
+  shortDescription: string;
+  description: string;
+
+  keyIngredients: readonly string[];
+  benefits: readonly string[];
+  howToUse: readonly string[];
+  warnings?: readonly string[];
+
+  skinTypes: readonly SkinType[];
+  skinConcerns: readonly string[];
+
+  size: string;
+  inStock: boolean;
+  stockCount: number;
+  lowStockThreshold?: number;
+
+  isFeatured: boolean;
+  isNew?: boolean;
+  tags: readonly ProductTag[];
+
+  collections?: readonly string[];
+  bundleWith?: readonly string[];
+  faq?: readonly FAQItem[];
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* ============================================================================
+   PRODUCT DATA — SSOT
+============================================================================ */
+export const productsData: readonly Product[] = [
   {
     id: "prod_001",
+    slug: "flawlessfx-stay-all-day-matte-foundation",
     name: "Stay All Day Matte Foundation",
     brand: "Flawless FX",
-    category: "Foundation",
-    slug: "flawlessfx-stay-all-day-matte-foundation",
+    category: PRODUCT_CATEGORIES.FOUNDATION,
+
     image: pic1,
     images: [pic1],
+
     price: 329900,
     oldPrice: 389900,
     discount: 15,
     currency: "KSh",
+
     rating: 4.8,
     reviewCount: 2456,
+
+    shortDescription: "24-hour matte finish foundation",
     description:
-      "Full-coverage, oil-free foundation that delivers a comfortable matte finish that lasts up to 24 hours.",
-    shortDescription: "24-hour full-coverage matte foundation",
-    keyIngredients: ["Kaolin Clay", "Vitamin E", "Oil-Absorbing Powders"],
-    benefits: [
-      "Controls excess shine",
-      "Transfer-proof formula",
-      "Non-comedogenic"
-    ],
-    howToUse: [
-      "Apply to clean, primed skin with a brush or sponge",
-      "Start at the center of the face and blend outward"
-    ],
-    skinTypes: ["Oily", "Combination", "Normal"],
-    skinConcerns: ["Oil Control", "Longevity", "Full Coverage"],
+      "Full-coverage matte foundation designed to control shine for 24 hours.",
+
+    keyIngredients: ["Vitamin E", "Kaolin Clay"],
+    benefits: ["Non-comedogenic", "Long wear"],
+    howToUse: ["Apply evenly using brush or sponge"],
+
+    skinTypes: ["Oily", "Combination"],
+    skinConcerns: ["Oil Control", "Coverage"],
+
     size: "30ml",
     inStock: true,
     stockCount: 45,
     lowStockThreshold: 8,
+
     isFeatured: true,
-    tags: ["Bestseller", "Matte", "Non-Comedogenic"],
+    tags: ["Bestseller", "Matte"],
+
     collections: ["Foundation Heroes"],
+    bundleWith: ["prod_004", "prod_006"],
+
     faq: [
       {
-        id: "faq_001_1",
-        question: "Is this foundation mask-friendly?",
-        answer: "Yes, it's formulated to be transfer-resistant under light conditions.",
+        id: "faq_001",
+        question: "Does this transfer?",
+        answer: "Minimal transfer when properly set.",
         helpful: 42,
-        date: "2024-09-15"
-      }
+        date: "2024-09-15",
+      },
     ],
-    bundleWith: ["prod_004", "prod_006"],
+
     createdAt: "2023-01-15T00:00:00Z",
-    updatedAt: "2024-10-20T00:00:00Z"
+    updatedAt: "2024-10-20T00:00:00Z",
   },
   {
     id: "prod_002",
     name: "Lash Amplify Volume Mascara",
     brand: "EyeStyle",
-    category: "Mascara",
+    category: PRODUCT_CATEGORIES.MASCARA,
     slug: "eyestyle-lash-amplify-volume-mascara",
-    image: pic2,
-    images: [pic2],
+    image: IMAGE_LIBRARY.pic2,
+    images: [IMAGE_LIBRARY.pic2],
     price: 159900,
     oldPrice: 179900,
     discount: 11,
@@ -272,15 +235,8 @@ export const productsData: Product[] = [
       "Intensely black mascara that builds dramatic volume and curl without clumping or flaking.",
     shortDescription: "Dramatic volume and curl mascara",
     keyIngredients: ["Conditioning Polymers", "Pro-Vitamin B5"],
-    benefits: [
-      "Maximum volume build-up",
-      "Intense black pigment",
-      "Smudge-resistant wear"
-    ],
-    howToUse: [
-      "Wiggle the wand at the base of lashes",
-      "Sweep upward from root to tip; apply second coat for extra drama"
-    ],
+    benefits: ["Maximum volume build-up", "Intense black pigment", "Smudge-resistant wear"],
+    howToUse: ["Wiggle the wand at the base of lashes", "Sweep upward from root to tip; apply second coat for extra drama"],
     skinTypes: ["All"],
     skinConcerns: ["Smudging"],
     size: "10ml",
@@ -291,16 +247,16 @@ export const productsData: Product[] = [
     warnings: ["Avoid direct contact with eyes."],
     bundleWith: ["prod_005", "prod_011"],
     createdAt: "2023-02-10T00:00:00Z",
-    updatedAt: "2024-10-18T00:00:00Z"
+    updatedAt: "2024-10-18T00:00:00Z",
   },
   {
     id: "prod_003",
     name: "Velvet Glide Liquid Lipstick - Shade Ruby",
     brand: "Lip Luxe",
-    category: "Lipstick",
+    category: PRODUCT_CATEGORIES.LIPSTICK,
     slug: "lipluxe-velvet-glide-liquid-lipstick",
-    image: pic3,
-    images: [pic3],
+    image: IMAGE_LIBRARY.pic3,
+    images: [IMAGE_LIBRARY.pic3],
     price: 189900,
     oldPrice: 229900,
     discount: 17,
@@ -311,15 +267,8 @@ export const productsData: Product[] = [
       "Ultra-pigmented liquid lipstick that dries down to a comfortable, non-drying velvet matte finish.",
     shortDescription: "Pigmented, long-wear velvet liquid lipstick",
     keyIngredients: ["Shea Butter", "Vitamin C"],
-    benefits: [
-      "Extreme color payoff",
-      "All-day wear",
-      "Doesn't feather or bleed"
-    ],
-    howToUse: [
-      "Apply directly to lips using the wand applicator",
-      "Wait 60 seconds for the matte finish to set"
-    ],
+    benefits: ["Extreme color payoff", "All-day wear", "Doesn't feather or bleed"],
+    howToUse: ["Apply directly to lips using the wand applicator", "Wait 60 seconds for the matte finish to set"],
     skinTypes: ["All"],
     skinConcerns: ["Dry Patches", "Longevity"],
     size: "6ml",
@@ -329,35 +278,27 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["Award Winner", "Matte"],
     createdAt: "2023-03-20T00:00:00Z",
-    updatedAt: "2024-10-15T00:00:00Z"
+    updatedAt: "2024-10-15T00:00:00Z",
   },
   {
     id: "prod_004",
     name: "Full Cover Retouch Concealer",
     brand: "Cover Pro",
-    category: "Concealer",
+    category: PRODUCT_CATEGORIES.CONCEALER,
     slug: "coverpro-full-cover-retouch-concealer",
-    image: pic4,
-    images: [pic4],
+    image: IMAGE_LIBRARY.pic4,
+    images: [IMAGE_LIBRARY.pic4],
     price: 199900,
     oldPrice: 219900,
     discount: 9,
     currency: "KSh",
     rating: 4.5,
     reviewCount: 2134,
-    description:
-      "Creamy, blendable concealer for dark circles and blemishes. Crease-proof, 16-hour wear.",
+    description: "Creamy, blendable concealer for dark circles and blemishes. Crease-proof, 16-hour wear.",
     shortDescription: "Crease-proof, high-coverage concealer",
     keyIngredients: ["Caffeine", "Hyaluronic Acid"],
-    benefits: [
-      "Brightens undereyes",
-      "Doesn't cake or settle",
-      "Water-resistant"
-    ],
-    howToUse: [
-      "Apply in a triangle shape under the eyes or directly onto blemishes",
-      "Blend gently with finger or brush"
-    ],
+    benefits: ["Brightens undereyes", "Doesn't cake or settle", "Water-resistant"],
+    howToUse: ["Apply in a triangle shape under the eyes or directly onto blemishes", "Blend gently with finger or brush"],
     skinTypes: ["All", "Combination", "Normal"],
     skinConcerns: ["Uneven Tone", "Full Coverage"],
     size: "7ml",
@@ -366,35 +307,27 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["Dermatologist Tested", "Waterproof"],
     createdAt: "2023-04-05T00:00:00Z",
-    updatedAt: "2024-10-12T00:00:00Z"
+    updatedAt: "2024-10-12T00:00:00Z",
   },
   {
     id: "prod_005",
     name: "Desert Sunset Eyeshadow Palette",
     brand: "ColorPop",
-    category: "Eyeshadow Palette",
+    category: PRODUCT_CATEGORIES.EYESHADOW_PALETTE,
     slug: "colorpop-desert-sunset-eyeshadow-palette",
-    image: pic5,
-    images: [pic5],
+    image: IMAGE_LIBRARY.pic5,
+    images: [IMAGE_LIBRARY.pic5],
     price: 449900,
     oldPrice: 489900,
     discount: 8,
     currency: "KSh",
     rating: 4.9,
     reviewCount: 987,
-    description:
-      "A 12-pan palette featuring warm mattes and shimmering metallics inspired by desert tones. Highly blendable and pigmented.",
+    description: "A 12-pan palette featuring warm mattes and shimmering metallics inspired by desert tones. Highly blendable and pigmented.",
     shortDescription: "Warm-toned 12-pan eyeshadow palette",
     keyIngredients: ["Talc-Free Formula", "Rich Pigments"],
-    benefits: [
-      "Zero fallout",
-      "Easy to blend",
-      "Versatile day-to-night looks"
-    ],
-    howToUse: [
-      "Apply matte shades to the crease for depth",
-      "Use metallic shades on the lid with a damp brush for intense shine"
-    ],
+    benefits: ["Zero fallout", "Easy to blend", "Versatile day-to-night looks"],
+    howToUse: ["Apply matte shades to the crease for depth", "Use metallic shades on the lid with a damp brush for intense shine"],
     skinTypes: ["All"],
     skinConcerns: ["Fading"],
     size: "18g",
@@ -405,16 +338,16 @@ export const productsData: Product[] = [
     tags: ["Award Winner", "Bestseller"],
     collections: ["Eye Art"],
     createdAt: "2023-05-15T00:00:00Z",
-    updatedAt: "2024-10-10T00:00:00Z"
+    updatedAt: "2024-10-10T00:00:00Z",
   },
   {
     id: "prod_006",
     name: "Hydro-Mist Setting Spray",
     brand: "GlowUp",
-    category: "Setting Spray",
+    category: PRODUCT_CATEGORIES.SETTING_SPRAY,
     slug: "glowup-hydro-mist-setting-spray",
-    image: pic6,
-    images: [pic6],
+    image: IMAGE_LIBRARY.pic6,
+    images: [IMAGE_LIBRARY.pic6],
     price: 259900,
     oldPrice: 289900,
     discount: 10,
@@ -443,16 +376,16 @@ export const productsData: Product[] = [
     tags: ["Glowy Finish", "Vegan"],
     warnings: ["Do not inhale."],
     createdAt: "2023-06-20T00:00:00Z",
-    updatedAt: "2024-10-08T00:00:00Z"
+    updatedAt: "2024-10-08T00:00:00Z",
   },
   {
     id: "prod_007",
     name: "Cheek Kiss Liquid Blush - Peony",
     brand: "Rouge FX",
-    category: "Blush",
+    category: PRODUCT_CATEGORIES.BLUSH,
     slug: "rougefx-cheek-kiss-liquid-blush",
-    image: pic7,
-    images: [pic7],
+    image: IMAGE_LIBRARY.pic7,
+    images: [IMAGE_LIBRARY.pic7],
     price: 199900,
     oldPrice: 229900,
     discount: 13,
@@ -481,16 +414,16 @@ export const productsData: Product[] = [
     tags: ["Bestseller", "Cruelty-Free"],
     collections: ["Cheek Pop"],
     createdAt: "2023-07-10T00:00:00Z",
-    updatedAt: "2024-10-05T00:00:00Z"
+    updatedAt: "2024-10-05T00:00:00Z",
   },
   {
     id: "prod_008",
     name: "Diamond Dust Highlighter",
     brand: "Shine Bright",
-    category: "Highlighter",
+    category: PRODUCT_CATEGORIES.HIGHLIGHTER,
     slug: "shinebright-diamond-dust-highlighter",
-    image: pic8,
-    images: [pic8],
+    image: IMAGE_LIBRARY.pic8,
+    images: [IMAGE_LIBRARY.pic8],
     price: 219900,
     oldPrice: 249900,
     discount: 12,
@@ -518,16 +451,16 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["Cruelty-Free", "Glowy Finish"],
     createdAt: "2023-08-15T00:00:00Z",
-    updatedAt: "2024-10-03T00:00:00Z"
+    updatedAt: "2024-10-03T00:00:00Z",
   },
   {
     id: "prod_009",
     name: "Always Sharp Lip Liner - Nude",
     brand: "Line Art",
-    category: "Lip Liner",
+    category: PRODUCT_CATEGORIES.LIP_LINER,
     slug: "lineart-always-sharp-lip-liner-nude",
-    image: pic9,
-    images: [pic9],
+    image: IMAGE_LIBRARY.pic9,
+    images: [IMAGE_LIBRARY.pic9],
     price: 109900,
     oldPrice: 129900,
     discount: 15,
@@ -556,16 +489,16 @@ export const productsData: Product[] = [
     isNew: true,
     tags: ["New Arrival", "Waterproof"],
     createdAt: "2024-08-01T00:00:00Z",
-    updatedAt: "2024-10-01T00:00:00Z"
+    updatedAt: "2024-10-01T00:00:00Z",
   },
   {
     id: "prod_010",
     name: "Pure Hydration Serum Foundation",
     brand: "AquaBase",
-    category: "Foundation",
+    category: PRODUCT_CATEGORIES.FOUNDATION,
     slug: "aquabase-pure-hydration-serum-foundation",
-    image: pic10,
-    images: [pic10],
+    image: IMAGE_LIBRARY.pic10,
+    images: [IMAGE_LIBRARY.pic10],
     price: 419900,
     oldPrice: 469900,
     discount: 11,
@@ -595,16 +528,16 @@ export const productsData: Product[] = [
     tags: ["Award Winner", "Glowy Finish"],
     collections: ["Luxury"],
     createdAt: "2023-09-10T00:00:00Z",
-    updatedAt: "2024-09-28T00:00:00Z"
+    updatedAt: "2024-09-28T00:00:00Z",
   },
   {
     id: "prod_011",
     name: "Epic Ink Waterproof Eyeliner",
     brand: "EyeStyle",
-    category: "Eyeliner",
+    category: PRODUCT_CATEGORIES.EYELINER,
     slug: "eyestyle-epic-ink-waterproof-eyeliner",
-    image: pic11,
-    images: [pic11],
+    image: IMAGE_LIBRARY.pic11,
+    images: [IMAGE_LIBRARY.pic11],
     price: 149900,
     oldPrice: 169900,
     discount: 12,
@@ -625,16 +558,16 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["Waterproof"],
     createdAt: "2024-01-10T00:00:00Z",
-    updatedAt: "2024-09-20T00:00:00Z"
+    updatedAt: "2024-09-20T00:00:00Z",
   },
   {
     id: "prod_012",
     name: "CC Cream SPF 50 - Medium",
     brand: "DermaGuard",
-    category: "Foundation",
+    category: PRODUCT_CATEGORIES.FOUNDATION,
     slug: "dermaguard-cc-cream-spf50-medium",
-    image: pic12,
-    images: [pic12],
+    image: IMAGE_LIBRARY.pic12,
+    images: [IMAGE_LIBRARY.pic12],
     price: 289900,
     oldPrice: 329900,
     discount: 12,
@@ -655,16 +588,16 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["Non-Comedogenic", "Dermatologist Tested"],
     createdAt: "2022-11-02T00:00:00Z",
-    updatedAt: "2024-08-30T00:00:00Z"
-  },
+    updatedAt: "2024-08-30T00:00:00Z",
+  }, 
   {
     id: "prod_013",
     name: "Pore Minimizing Primer",
     brand: "Smooth Canvas",
-    category: "Foundation", // Using Foundation as the closest container for Primers
+    category: PRODUCT_CATEGORIES.PRIMER,
     slug: "smoothcanvas-pore-minimizing-primer",
-    image: pic13,
-    images: [pic13],
+    image: IMAGE_LIBRARY.pic13,
+    images: [IMAGE_LIBRARY.pic13],
     price: 249900,
     oldPrice: 279900,
     discount: 11,
@@ -682,19 +615,20 @@ export const productsData: Product[] = [
     size: "30ml",
     inStock: true,
     stockCount: 27,
+    lowStockThreshold: 5,
     isFeatured: false,
     tags: ["Matte", "Bestseller"],
     createdAt: "2023-10-12T00:00:00Z",
-    updatedAt: "2024-09-12T00:00:00Z"
+    updatedAt: "2024-09-12T00:00:00Z",
   },
   {
     id: "prod_014",
     name: "Brow Sculpt Tinted Gel",
     brand: "Arch Expert",
-    category: "Eyeliner", // Using Eyeliner as the closest container for Brow
+    category: PRODUCT_CATEGORIES.BROW_GEL,
     slug: "archedxpert-brow-sculpt-tinted-gel",
-    image: pic14,
-    images: [pic14],
+    image: IMAGE_LIBRARY.pic14,
+    images: [IMAGE_LIBRARY.pic14],
     price: 129900,
     oldPrice: 149900,
     discount: 13,
@@ -712,19 +646,20 @@ export const productsData: Product[] = [
     size: "3g",
     inStock: true,
     stockCount: 30,
+    lowStockThreshold: 5,
     isFeatured: false,
     tags: ["Cruelty-Free"],
     createdAt: "2023-06-01T00:00:00Z",
-    updatedAt: "2024-08-05T00:00:00Z"
+    updatedAt: "2024-08-05T00:00:00Z",
   },
   {
     id: "prod_015",
     name: "Full Volume Plumping Gloss",
     brand: "Lip Luxe",
-    category: "Lipstick", // Used for lip products
+    category: PRODUCT_CATEGORIES.LIP_GLOSS,
     slug: "lipluxe-full-volume-plumping-gloss",
-    image: pic15,
-    images: [pic15],
+    image: IMAGE_LIBRARY.pic15,
+    images: [IMAGE_LIBRARY.pic15],
     price: 179900,
     oldPrice: 199900,
     discount: 10,
@@ -742,19 +677,20 @@ export const productsData: Product[] = [
     size: "6ml",
     inStock: true,
     stockCount: 21,
+    lowStockThreshold: 5,
     isFeatured: false,
     tags: ["Vegan", "Glowy Finish"],
     createdAt: "2022-08-12T00:00:00Z",
-    updatedAt: "2024-07-20T00:00:00Z"
+    updatedAt: "2024-07-20T00:00:00Z",
   },
   {
     id: "prod_016",
     name: "Sun Kissed Bronzer Powder",
     brand: "Bronzology",
-    category: "Highlighter", // Using Highlighter as the closest for Bronzer
+    category: PRODUCT_CATEGORIES.BRONZER,
     slug: "bronzology-sun-kissed-bronzer-powder",
-    image: pic16,
-    images: [pic16],
+    image: IMAGE_LIBRARY.pic16,
+    images: [IMAGE_LIBRARY.pic16],
     price: 369900,
     oldPrice: 409900,
     discount: 10,
@@ -776,16 +712,16 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["Matte", "Cruelty-Free"],
     createdAt: "2021-11-01T00:00:00Z",
-    updatedAt: "2024-06-16T00:00:00Z"
+    updatedAt: "2024-06-16T00:00:00Z",
   },
   {
     id: "prod_017",
     name: "Invisible Set Translucent Powder",
     brand: "Set & Go",
-    category: "Setting Spray", // Using Setting Spray as the closest for Powder
+    category: PRODUCT_CATEGORIES.SETTING_POWDER,
     slug: "setgo-invisible-set-translucent-powder",
-    image: pic17,
-    images: [pic17],
+    image: IMAGE_LIBRARY.pic17,
+    images: [IMAGE_LIBRARY.pic17],
     price: 279900,
     oldPrice: 309900,
     discount: 10,
@@ -803,19 +739,20 @@ export const productsData: Product[] = [
     size: "29g",
     inStock: true,
     stockCount: 36,
+    lowStockThreshold: 5,
     isFeatured: false,
     tags: ["Matte"],
     createdAt: "2023-03-05T00:00:00Z",
-    updatedAt: "2024-05-11T00:00:00Z"
+    updatedAt: "2024-05-11T00:00:00Z",
   },
   {
     id: "prod_018",
     name: "Sheer Tinted Moisturizer",
     brand: "Everyday Base",
-    category: "Foundation",
+    category: PRODUCT_CATEGORIES.FOUNDATION,
     slug: "everydaybase-sheer-tinted-moisturizer",
-    image: pic18,
-    images: [pic18],
+    image: IMAGE_LIBRARY.pic18,
+    images: [IMAGE_LIBRARY.pic18],
     price: 219900,
     oldPrice: 249900,
     discount: 12,
@@ -836,16 +773,16 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["Glowy Finish", "Vegan"],
     createdAt: "2023-02-02T00:00:00Z",
-    updatedAt: "2024-04-01T00:00:00Z"
+    updatedAt: "2024-04-01T00:00:00Z",
   },
   {
     id: "prod_019",
     name: "Longwear Lip Stain - Peach",
     brand: "Stain Lab",
-    category: "Lipstick",
+    category: PRODUCT_CATEGORIES.LIPSTICK,
     slug: "stainlab-longwear-lip-stain-peach",
-    image: pic19,
-    images: [pic19],
+    image: IMAGE_LIBRARY.pic19,
+    images: [IMAGE_LIBRARY.pic19],
     price: 169900,
     oldPrice: 199900,
     discount: 15,
@@ -866,16 +803,16 @@ export const productsData: Product[] = [
     isFeatured: false,
     tags: ["New Arrival", "Bestseller"],
     createdAt: "2022-05-18T00:00:00Z",
-    updatedAt: "2024-03-21T00:00:00Z"
+    updatedAt: "2024-03-21T00:00:00Z",
   },
   {
     id: "prod_020",
     name: "Kajal Kohl Liner - Intense Black",
     brand: "Deep Line",
-    category: "Eyeliner",
+    category: PRODUCT_CATEGORIES.EYELINER,
     slug: "deepline-kajal-kohl-liner",
-    image: pic20,
-    images: [pic20],
+    image: IMAGE_LIBRARY.pic20,
+    images: [IMAGE_LIBRARY.pic20],
     price: 99900,
     oldPrice: 119900,
     discount: 17,
@@ -897,178 +834,72 @@ export const productsData: Product[] = [
     isFeatured: true,
     tags: ["Hypoallergenic", "Bestseller"],
     createdAt: "2023-12-01T00:00:00Z",
-    updatedAt: "2024-01-10T00:00:00Z"
-  }
+    updatedAt: "2024-01-10T00:00:00Z",
+  },
 ];
 
-/* ============================
-    MOCK REVIEWS
-    ============================ */
+/* ============================================================================
+   CONTROLLER HELPERS — Clean, Reusable
+============================================================================ */
 
-export const reviewsData: Review[] = [
-  {
-    id: "rev_001",
-    productId: "prod_001",
-    userName: "Sarah M.",
-    rating: 5,
-    date: "2024-10-15T00:00:00Z",
-    title: "Best foundation for my T-zone!",
-    comment:
-      "Keeps my skin matte all day without looking cakey. Perfect for the humid Nairobi climate. Highly recommend.",
-    verified: true,
-    helpful: 45,
-    skinType: "Oily",
-    ageRange: "25-34"
-  },
-  {
-    id: "rev_002",
-    productId: "prod_002",
-    userName: "James K.",
-    rating: 4,
-    date: "2024-10-10T00:00:00Z",
-    title: "Great definition without flaking",
-    comment:
-      "Builds beautiful volume and doesn't flake off even after a full day's wear. The brush is fantastic.",
-    verified: true,
-    helpful: 12,
-    skinType: "Normal",
-    ageRange: "35-44"
-  },
-  {
-    id: "rev_003",
-    productId: "prod_010",
-    userName: "Aisha N.",
-    rating: 5,
-    date: "2024-09-20T00:00:00Z",
-    title: "Luminous and natural",
-    comment:
-      "Used with other products — skin looks fresh and dewy, not heavy. Perfect for mature skin or dry skin in need of hydration.",
-    verified: true,
-    helpful: 23,
-    skinType: "Dry",
-    ageRange: "45-54"
-  }
-];
+export const BASE_PATH = "/dropdowns/beauty";
 
-/* ============================
-    DATA ACCESS & UTILITIES (No change needed from template)
-    ============================ */
+export const buildProductDetailUrl = (slug: string) =>
+  `${BASE_PATH}/${slug}`;
 
-export const getProductById = (id: string): Product | undefined =>
-  productsData.find((p) => p.id === id);
 
+
+
+/** Build safe product detail page URL */
+export const getProductURL = (slug: string): string =>
+  `${BASE_PATH}/${encodeURIComponent(slug.trim())}`;
+
+
+
+/** Find product via slug */
+/** Normalize slugs: lowercase, trim spaces */
+const normalizeSlug = (slug: string) => slug.trim().toLowerCase();
+
+/** Find product via slug */
 export const getProductBySlug = (slug: string): Product | undefined =>
-  productsData.find((p) => p.slug === slug);
+  productsData.find((p) => normalizeSlug(p.slug) === normalizeSlug(slug));
+productsData.map(p => ({ ...p, slug: p.slug.toLowerCase().trim() }));
 
-export const getAllProducts = (): Product[] => [...productsData];
 
-export const getProductsByCategory = (category: ProductCategory): Product[] =>
-  productsData.filter((p) => p.category === category);
 
-export const getProductsByBrand = (brand: string): Product[] =>
-  productsData.filter((p) => p.brand.toLowerCase() === brand.toLowerCase());
+/** Return all products */
+export const getAllProducts = (): readonly Product[] => productsData;
 
-export const getFeaturedProducts = (limit?: number): Product[] => {
-  const featured = productsData.filter((p) => p.isFeatured);
-  return limit ? featured.slice(0, limit) : featured;
+/** Safe price formatting */
+export const formatPrice = (
+  amount: number,
+  currency: "KSh" | "USD" | string = "KSh"
+) => {
+  if (amount === undefined || amount === null) return "N/A";
+
+  try {
+    return new Intl.NumberFormat("en-KE", {
+      style: "currency",
+      currency: currency === "USD" ? "USD" : "KES",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${amount.toLocaleString()} ${currency}`;
+  }
 };
 
-export const getNewProducts = (limit?: number): Product[] => {
-  const newest = productsData.filter((p) => p.isNew);
-  return limit ? newest.slice(0, limit) : newest;
+/** Compute discounted price */
+export const calculateDiscountPrice = (price: number, discount = 0): number => {
+  const safe = Math.min(Math.max(discount, 0), 100);
+  return Math.max(0, Math.round(price - (price * safe) / 100));
 };
 
-export const getSaleProducts = (limit?: number): Product[] => {
-  const sale = productsData.filter((p) => p.oldPrice && p.oldPrice > p.price);
-  return limit ? sale.slice(0, limit) : sale;
-};
-
-export const getRelatedProducts = (productId: string, limit = 4): Product[] => {
-  const product = getProductById(productId);
-  if (!product) return [];
-  let related = productsData.filter((p) => p.id !== productId && p.category === product.category);
-  if (related.length < limit) {
-    const brandMatches = productsData.filter(
-      (p) => p.id !== productId && p.brand === product.brand && !related.find((r) => r.id === p.id)
-    );
-    related = [...related, ...brandMatches];
-  }
-  return related.slice(0, limit);
-};
-
-export const getFrequentlyBoughtTogether = (productId: string): Product[] => {
-  const product = getProductById(productId);
-  if (!product || !product.bundleWith) return [];
-  return product.bundleWith
-    .map((id) => getProductById(id))
-    .filter((p): p is Product => p !== undefined);
-};
-
-export const searchProducts = (query: string, filters?: SearchFilters): Product[] => {
-  let results = [...productsData];
-  const q = query.trim().toLowerCase();
-  if (q) {
-    results = results.filter((p) =>
-      [
-        p.name,
-        p.brand,
-        p.category,
-        p.description,
-        ...(p.keyIngredients || [])
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q)
-    );
-  }
-  if (!filters) return results;
-  if (filters.categories?.length) {
-    results = results.filter((p) => filters.categories!.includes(p.category));
-  }
-  if (filters.brands?.length) {
-    results = results.filter((p) => filters.brands!.includes(p.brand));
-  }
-  if (filters.skinTypes?.length) {
-    results = results.filter((p) => filters.skinTypes!.some((t) => p.skinTypes.includes(t)));
-  }
-  if (filters.skinConcerns?.length) {
-    results = results.filter((p) => p.skinConcerns && filters.skinConcerns!.some((c) => p.skinConcerns!.includes(c)));
-  }
-  if (filters.priceRange) {
-    results = results.filter((p) => p.price >= filters.priceRange!.min && p.price <= filters.priceRange!.max);
-  }
-  if (filters.rating) {
-    results = results.filter((p) => p.rating >= filters.rating!);
-  }
-  if (filters.inStock) {
-    results = results.filter((p) => p.inStock && p.stockCount > 0);
-  }
-  if (filters.tags?.length) {
-    results = results.filter((p) => p.tags && filters.tags!.some((t) => p.tags!.includes(t)));
-  }
-  return results;
-};
-
-export const sortProducts = (products: Product[], sortBy: string): Product[] => {
-  const items = [...products];
-  switch (sortBy) {
-    case "price-low":
-      return items.sort((a, b) => a.price - b.price);
-    case "price-high":
-      return items.sort((a, b) => b.price - a.price);
-    case "rating":
-      return items.sort((a, b) => b.rating - a.rating);
-    case "reviews":
-      return items.sort((a, b) => b.reviewCount - a.reviewCount);
-    case "newest":
-      return items.sort((a, b) => (new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()));
-    case "name-asc":
-      return items.sort((a, b) => a.name.localeCompare(b.name));
-    case "name-desc":
-      return items.sort((a, b) => b.name.localeCompare(a.name));
-    case "featured":
-      return items.sort((a, b) => (a.isFeatured && !b.isFeatured ? -1 : !a.isFeatured && b.isFeatured ? 1 : 0));
-    default:
-      return items;
-  }
-};
+/** Related products (same category, excluding current) */
+export const getRelatedProducts = (
+  currentId: string,
+  category: ProductCategory,
+  limit = 4
+): Product[] =>
+  productsData
+    .filter((p) => p.id !== currentId && p.category === category)
+    .slice(0, limit);

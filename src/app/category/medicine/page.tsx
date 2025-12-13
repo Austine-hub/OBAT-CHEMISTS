@@ -1,12 +1,16 @@
+// ============================================================================
 // src/components/offers/Offers.tsx
+// Clean • DRY • Optimized • No Pop-up Modal • Slug Navigation
+// ============================================================================
+
 "use client";
 
-import React, { useState, memo } from "react";
+import React, { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import styles from "./Offers.module.css";
-
 import {
   otcProducts,
   WHATSAPP_NUMBER,
@@ -14,8 +18,11 @@ import {
 } from "@/data/otc.data";
 
 const Offers: React.FC = memo(() => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const router = useRouter();
 
+  // --------------------------------------------------------------------------
+  // WhatsApp Order Handler
+  // --------------------------------------------------------------------------
   const handleWhatsAppOrder = (productName: string) => {
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}%20${encodeURIComponent(
       productName
@@ -23,35 +30,44 @@ const Offers: React.FC = memo(() => {
     window.open(url, "_blank");
   };
 
-  const openImage = (src: string) => setSelectedImage(src);
-  const closeModal = () => setSelectedImage(null);
+  // --------------------------------------------------------------------------
+  // Navigate to Product Details Page Using Slug
+  // --------------------------------------------------------------------------
+  const goToProductPage = (slug: string) => {
+    router.push(`/dropdowns/otc/${slug}`);
+  };
 
   return (
     <section className={styles.offersSection}>
-      {/* Header */}
+      {/* ---------------------------------- HEADER ---------------------------------- */}
       <div className={styles.header}>
         <h2 className={styles.title}>Top OTC Pharmacy Offers</h2>
+
         <Link href="/buy-medicines" className={styles.viewAll}>
           View all offers →
         </Link>
       </div>
 
-      {/* Grid */}
+      {/* ----------------------------------- GRID ----------------------------------- */}
       <div className={styles.offersGrid}>
         {otcProducts.map((item) => (
           <div key={item.id} className={styles.card}>
             <div className={styles.discountTag}>-{item.discount}%</div>
 
-            <div className={styles.imageWrapper} onClick={() => openImage(item.image.src)}>
+            {/* Navigate to product page on image click */}
+            <div
+              className={styles.imageWrapper}
+              onClick={() => goToProductPage(item.slug)}
+            >
               <Image
                 src={item.image}
                 alt={item.name}
                 className={styles.productImage}
                 loading="lazy"
               />
-              <button className={styles.quickViewBtn}>Quick View</button>
             </div>
 
+            {/* Product Info */}
             <div className={styles.info}>
               <p className={styles.name}>{item.name}</p>
 
@@ -65,6 +81,7 @@ const Offers: React.FC = memo(() => {
               </div>
             </div>
 
+            {/* CTA Buttons */}
             <div className={styles.actions}>
               <button
                 className={styles.addToCart}
@@ -75,7 +92,7 @@ const Offers: React.FC = memo(() => {
 
               <button
                 className={styles.viewProduct}
-                onClick={() => openImage(item.image.src)}
+                onClick={() => goToProductPage(item.slug)}
               >
                 View Product
               </button>
@@ -83,27 +100,6 @@ const Offers: React.FC = memo(() => {
           </div>
         ))}
       </div>
-
-      {/* Modal */}
-      {selectedImage && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={selectedImage}
-              alt="Product Preview"
-              width={600}
-              height={600}
-              className={styles.modalImage}
-            />
-            <button className={styles.closeBtn} onClick={closeModal}>
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
     </section>
   );
 });

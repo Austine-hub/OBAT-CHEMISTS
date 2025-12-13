@@ -1,4 +1,4 @@
-// src/data/GitData.ts
+//src/data/gitData.ts
 
 import type { StaticImageData } from "next/image";
 
@@ -14,16 +14,46 @@ import pic8 from "../assets/products/Esomeprazole.png";
 import pic9 from "../assets/products/ORS1.png";
 import pic10 from "../assets/products/Probiotic.png";
 
-export interface Product {
+// ---------------------------------------------------------------------------
+// Types (MODEL)
+// ---------------------------------------------------------------------------
+export type StockStatus = "In Stock" | "Out of Stock";
+
+export interface GitProduct {
   id: number;
   name: string;
+  slug: string; // auto-generated
   image: StaticImageData;
   price: number;
   category: string;
-  stock: "In Stock" | "Out of Stock";
+  stock: StockStatus;
+
+  // Optional extended fields (Details page ready)
+  description?: string;
+  fullDescription?: string;
+  features?: string[];
+  howToUse?: string;
 }
 
-export const gitProducts: Product[] = [
+// ---------------------------------------------------------------------------
+// Utilities (CONTROLLER helpers — framework agnostic)
+// ---------------------------------------------------------------------------
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[®™]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+
+const formatPrice = (price: number): string => `KES ${price.toLocaleString()}`;
+
+const getStockStatus = (product: GitProduct): StockStatus => product.stock;
+
+// ---------------------------------------------------------------------------
+// Raw Data (NO logic here — DRY)
+// ---------------------------------------------------------------------------
+const RAW_GIT_PRODUCTS: Omit<GitProduct, "slug">[] = [
   {
     id: 1,
     name: "Omeprazole 20mg Capsules (Losec®)",
@@ -31,6 +61,7 @@ export const gitProducts: Product[] = [
     price: 350,
     category: "Proton Pump Inhibitor (PPI)",
     stock: "In Stock",
+    description: "Reduces stomach acid production and relieves GERD symptoms.",
   },
   {
     id: 2,
@@ -101,7 +132,55 @@ export const gitProducts: Product[] = [
     name: "Probiotic Capsules (Lactobacillus GG / Florastor®)",
     image: pic10,
     price: 900,
-    category: "Gut Flora Support / Diarrhea Management",
+    category: "Gut Flora Support",
     stock: "In Stock",
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Normalized Data (AUTO-SLUGS)
+// ---------------------------------------------------------------------------
+export const gitProducts: GitProduct[] = RAW_GIT_PRODUCTS.map((p) => ({
+  ...p,
+  slug: slugify(p.name),
+}));
+
+// ---------------------------------------------------------------------------
+// Selectors / Query Helpers (CONTROLLER)
+// ---------------------------------------------------------------------------
+const getAllProducts = (): GitProduct[] => gitProducts;
+
+const getProductBySlug = (slug: string): GitProduct | undefined =>
+  gitProducts.find((p) => p.slug === slug);
+
+const getProductById = (id: number): GitProduct | undefined =>
+  gitProducts.find((p) => p.id === id);
+
+const getSimilarProducts = (id: number, limit = 4): GitProduct[] => {
+  const current = getProductById(id);
+  if (!current) return [];
+
+  return gitProducts
+    .filter((p) => p.category === current.category && p.id !== id)
+    .slice(0, limit);
+};
+
+// ---------------------------------------------------------------------------
+// Default Export (MVC-friendly bundle)
+// ---------------------------------------------------------------------------
+const gitData = {
+  // model
+  gitProducts,
+
+  // selectors
+  getAllProducts,
+  getProductBySlug,
+  getProductById,
+  getSimilarProducts,
+
+  // utils
+  formatPrice,
+  getStockStatus,
+};
+
+export default gitData;

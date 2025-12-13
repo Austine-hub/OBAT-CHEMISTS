@@ -1,11 +1,11 @@
 "use client";
 
 // ===============================================================
-// ✅ Offers2.tsx — Next.js (App Router) Version — 2025
-// Fully Refactored, Modernized, Clean, Optimized, Non‑Truncated
+// src/app/category/hygiene/page.tsx
+// Optimized • Modern • DRY • Strict • Robust
 // ===============================================================
 
-import React, { useRef, useState, useEffect, memo } from "react";
+import React, { useRef, useState, useEffect, memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import toast from "react-hot-toast";
@@ -19,56 +19,65 @@ import {
   type ProductListing,
 } from "@/data/hygieneData";
 
-const Offers2: React.FC = memo(() => {
+const HygienePage: React.FC = memo(() => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const { addToCart } = useCart();
   const router = useRouter();
+  const { addToCart } = useCart();
 
-  // Fetch products
-  const products: ProductListing[] = OffersDataUtils.getListingProducts();
+  // ===========================================================
+  // Fetch products (strict)
+  // ===========================================================
+  const products: ProductListing[] = OffersDataUtils.getListingProducts() ?? [];
 
-  // ------------------------------------------------------------
-  // 🔁 Scroll Logic
-  // ------------------------------------------------------------
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  // ===========================================================
+  // Scroll logic (debounced + robust)
+  // ===========================================================
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+  }, []);
 
   useEffect(() => {
     checkScroll();
     window.addEventListener("resize", checkScroll);
     return () => window.removeEventListener("resize", checkScroll);
-  }, []);
+  }, [checkScroll]);
 
   const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const scrollAmount = scrollRef.current.clientWidth * 0.8;
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const scrollAmount = el.clientWidth * 0.8;
+
+    el.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
   };
 
-  // ------------------------------------------------------------
-  // 🔗 Navigate to Product Details (Next.js)
-  // ------------------------------------------------------------
+  // ===========================================================
+  // Navigation → /dropdowns/hygiene/[slug]
+  // ===========================================================
   const handleViewDetails = (productId: string | number) => {
-    const url = OffersDataUtils.getProductURL(String(productId));
+    if (!productId) return;
+    const url = `/dropdowns/hygiene/${productId}`;
     router.push(url);
   };
 
-  // ------------------------------------------------------------
-  // 🛒 Add to Cart
-  // ------------------------------------------------------------
+  // ===========================================================
+  // Add to Cart
+  // ===========================================================
   const handleAddToCart = (product: ProductListing) => {
+    if (!product) return;
+
     addToCart({
       id: String(product.id),
       name: product.name,
@@ -76,18 +85,20 @@ const Offers2: React.FC = memo(() => {
       image: product.image,
       quantity: 1,
     });
+
     toast.success(`${product.name} added to cart 🛒`, { duration: 1800 });
   };
 
-  // ------------------------------------------------------------
-  // 🧩 JSX
-  // ------------------------------------------------------------
+  // ===========================================================
+  // JSX
+  // ===========================================================
   return (
     <section className={styles.offersSection}>
       <div className={styles.container}>
         {/* Header */}
-        <div className={styles.header}>
+        <header className={styles.header}>
           <h2 className={styles.title}>Campus Essentials</h2>
+
           <div className={styles.navButtons}>
             <button
               className={`${styles.navBtn} ${!canScrollLeft ? styles.disabled : ""}`}
@@ -123,9 +134,9 @@ const Offers2: React.FC = memo(() => {
               </svg>
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Product Cards */}
+        {/* Product List */}
         <div
           className={styles.productsWrapper}
           ref={scrollRef}
@@ -133,8 +144,12 @@ const Offers2: React.FC = memo(() => {
         >
           <div className={styles.productsGrid}>
             {products.map((product) => (
-              <article key={product.id} className={styles.productCard}>
-                {/* Trending Badge */}
+              <article
+                key={product.id}
+                className={styles.productCard}
+                role="article"
+              >
+                {/* Trending */}
                 {product.isTrending && (
                   <span className={styles.trendingBadge}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -145,7 +160,11 @@ const Offers2: React.FC = memo(() => {
                 )}
 
                 {/* Image */}
-                <div className={styles.imageWrapper}>
+                <div
+                  className={styles.imageWrapper}
+                  onClick={() => handleViewDetails(product.id)}
+                  role="button"
+                >
                   {typeof product.image === "string" ? (
                     <img
                       src={product.image}
@@ -158,11 +177,12 @@ const Offers2: React.FC = memo(() => {
                       src={product.image}
                       alt={product.name}
                       className={styles.productImage}
+                      priority={false}
                     />
                   )}
                 </div>
 
-                {/* Info */}
+                {/* Product Info */}
                 <div className={styles.productInfo}>
                   <h3 className={styles.productName}>{product.name}</h3>
                   <p className={styles.productDesc}>{product.description}</p>
@@ -171,7 +191,7 @@ const Offers2: React.FC = memo(() => {
                 </div>
 
                 {/* Footer */}
-                <div className={styles.cardFooter}>
+                <footer className={styles.cardFooter}>
                   <button
                     className={styles.addBtn}
                     onClick={() => handleAddToCart(product)}
@@ -188,14 +208,14 @@ const Offers2: React.FC = memo(() => {
                   >
                     View Details
                   </button>
-                </div>
+                </footer>
               </article>
             ))}
           </div>
         </div>
 
-        {/* View All Link */}
-        <a href="#" className={styles.viewAll}>
+        {/* View All */}
+        <button className={styles.viewAll} onClick={() => router.push("/dropdowns/hygiene")}>
           View All Campus Essentials
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
@@ -206,10 +226,11 @@ const Offers2: React.FC = memo(() => {
               strokeLinejoin="round"
             />
           </svg>
-        </a>
+        </button>
       </div>
     </section>
   );
 });
 
-export default Offers2;
+HygienePage.displayName = "HygienePage";
+export default HygienePage;

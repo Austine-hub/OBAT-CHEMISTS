@@ -1,120 +1,129 @@
+// src/app/system/oral/page.tsx
+
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { ShoppingCart } from "lucide-react";
+
 import { useCart } from "@/context/CartContext";
+import {
+  oralProducts,
+  type OralProduct,
+  formatPrice,
+  getStockStatus,
+} from "@/data/OralData";
 
-import styles from "./Oral.module.css";
-import { offersData, Offer }  from "@/data/OralData";
+import styles from "../Shop.module.css";
 
+/* -------------------------------------------------------------------------- */
+/*                                   VIEW                                     */
+/* -------------------------------------------------------------------------- */
 
-const Oral: React.FC = memo(() => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+const OralSystemPage: React.FC = memo(() => {
   const { addToCart } = useCart();
 
-  const handleAddToCart = (offer: Offer) => {
-    addToCart({
-      id: offer.id,
-      name: offer.name,
-      price: offer.price,
-      image: offer.image.src,
-      quantity: 1,
-    });
+  /* ------------------------------------------------------------------------ */
+  /*                              CART HANDLER                                */
+  /* ------------------------------------------------------------------------ */
 
-    toast.success(`${offer.name} added to cart 🛒`, {
-      duration: 2000,
-    });
-  };
+  const handleAddToCart = useCallback(
+    (product: OralProduct) => {
+      if (product.stock !== "In Stock") {
+        toast.error("Product is out of stock");
+        return;
+      }
 
-  const handleImageClick = (img: string) => {
-    setSelectedImage(img);
-  };
+      addToCart({
+        id: product.slug, // slug-first identity
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+        inStock: true,
+      });
 
-  const closeModal = () => setSelectedImage(null);
+      toast.success(`${product.name} added to cart`);
+    },
+    [addToCart]
+  );
+
+  /* ------------------------------------------------------------------------ */
+  /*                                   UI                                     */
+  /* ------------------------------------------------------------------------ */
 
   return (
-    <section className={styles.offersSection}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Top Skincare Offers</h2>
+    <section className={styles.shopSection}>
+      {/* Header */}
+      <header className={styles.header}>
+        <h2>Oral Care Products</h2>
 
-        <Link href="/buy-skincare" className={styles.viewAll}>
-          View all offers →
-        </Link>
-      </div>
+        <div className={styles.subCategory}>
+          <label>System:</label>
+          <span>Oral & Dental Care</span>
+        </div>
+      </header>
 
-      <div className={styles.offersGrid}>
-        {offersData.map((offer) => (
-          <div key={offer.id} className={styles.card}>
-            <div className={styles.discountTag}>-{offer.discount}%</div>
+      {/* Product Grid */}
+      <div className={styles.grid}>
+        {oralProducts.map((product) => {
+          const { isInStock, label } = getStockStatus(product.stock);
 
-            <div className={styles.imageWrapper}>
-              <Image
-                src={offer.image}
-                alt={offer.name}
-                className={styles.productImage}
-                loading="lazy"
-                onClick={() => handleImageClick(offer.image.src)}
-              />
+          return (
+            <article key={product.slug} className={styles.card}>
+              {/* Image */}
+              <div className={styles.imageWrapper}>
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={300}
+                  height={300}
+                  className={styles.image}
+                  priority={false}
+                />
 
-              <button
-                className={styles.quickViewBtn}
-                onClick={() => handleImageClick(offer.image.src)}
-              >
-                Quick View
-              </button>
-            </div>
-
-            <div className={styles.info}>
-              <p className={styles.name}>{offer.name}</p>
-
-              <div className={styles.prices}>
-                <span className={styles.newPrice}>
-                  KSh {offer.price.toLocaleString()}
-                </span>
-                <span className={styles.oldPrice}>
-                  KSh {offer.oldPrice.toLocaleString()}
+                <span
+                  className={`${styles.stockBadge} ${
+                    isInStock ? styles.inStock : styles.outStock
+                  }`}
+                >
+                  {label}
                 </span>
               </div>
-            </div>
 
-            <div className={styles.actions}>
-              <button
-                className={styles.addToCart}
-                onClick={() => handleAddToCart(offer)}
-              >
-                <ShoppingCart size={18} strokeWidth={1.8} />
-                <span>Add to Cart</span>
-              </button>
-            </div>
-          </div>
-        ))}
+              {/* Details */}
+              <div className={styles.details}>
+                <p className={styles.category}>{product.subCategory}</p>
+                <h3 className={styles.name}>{product.name}</h3>
+                <p className={styles.price}>{formatPrice(product.price)}</p>
+              </div>
+
+              {/* Actions */}
+              <div className={styles.actions}>
+                <button
+                  className={styles.addToCart}
+                  disabled={!isInStock}
+                  onClick={() => handleAddToCart(product)}
+                >
+                  {isInStock ? "🛒 Add to Cart" : "Out of Stock"}
+                </button>
+
+                <Link
+                  href={`/dropups/oral/${product.slug}`}
+                  className={styles.moreInfo}
+                >
+                  View Details →
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
-
-      {selectedImage && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={selectedImage}
-              alt="Product Preview"
-              width={450}
-              height={450}
-              className={styles.modalImage}
-            />
-
-            <button className={styles.closeBtn} onClick={closeModal}>
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
     </section>
   );
 });
 
-export default Oral;
+OralSystemPage.displayName = "OralSystemPage";
+
+export default OralSystemPage;

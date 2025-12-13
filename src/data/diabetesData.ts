@@ -1,44 +1,80 @@
+// data/diabetesData.ts
 import type { StaticImageData } from "next/image";
+
 // === Diabetes Drug Images ===
-import pic1 from "../assets/diabetes/Metformin.png";
-import pic2 from "../assets/diabetes/Glimepiride.png";
-import pic3 from "../assets/diabetes/Glipizide.png";
-import pic4 from "../assets/diabetes/Gliclazide.png";
-import pic5 from "../assets/diabetes/Sitagliptin.png";
-import pic6 from "../assets/diabetes/Vildagliptin.png";
-import pic7 from "../assets/diabetes/Empagliflozin.png";
-import pic8 from "../assets/diabetes/Dapagliflozin.png";
-import pic9 from "../assets/diabetes/Insulinglargine.png";
-import pic10 from "../assets/diabetes/InsulinAspart.png";
-import pic11 from "../assets/diabetes/InsulinDetemir.png";
-import pic12 from "../assets/diabetes/Pioglitazone.png";
-import pic13 from "../assets/diabetes/Acarbose.png";
-import pic14 from "../assets/diabetes/Linagliptin.png";
-import pic15 from "../assets/diabetes/Repaglinide.png";
+import pic1 from "../assets/diabetes/1.jpg";
+import pic2 from "../assets/diabetes/2.jpg";
+import pic3 from "../assets/diabetes/3.jpg";
+import pic4 from "../assets/diabetes/4.jpg";
+import pic5 from "../assets/diabetes/5.jpg";
+import pic6 from "../assets/diabetes/6.jpg";
+import pic7 from "../assets/diabetes/7.jpg";
+import pic8 from "../assets/diabetes/8.jpg";
+import pic9 from "../assets/diabetes/9.jpg";
+import pic10 from "../assets/diabetes/10.jpg";
+import pic11 from "../assets/diabetes/11.jpg";
+import pic12 from "../assets/diabetes/12.jpg";
+import pic13 from "../assets/diabetes/13.jpg";
+import pic14 from "../assets/diabetes/14.jpg";
+import pic15 from "../assets/diabetes/15.jpg";
 // === Additional Diabetes Drug Images ===
-import pic16 from "../assets/diabetes/Canagliflozin.png";   // SGLT2 inhibitor
-import pic17 from "../assets/diabetes/saxagliptin.png";     // DPP-4 inhibitor
-import pic18 from "../assets/diabetes/Liraglutide.png";     // GLP-1 receptor agonist
-import pic19 from "../assets/diabetes/Exenatide.png";       // GLP-1 receptor agonist
-import pic20 from "../assets/diabetes/Teneligliptin.png";   // DPP-4 inhibitor
+import pic16 from "../assets/diabetes/Canagliflozin.png";
+import pic17 from "../assets/diabetes/saxagliptin.png";
+import pic18 from "../assets/diabetes/Liraglutide.png";
+import pic19 from "../assets/diabetes/Exenatide.png";
+import pic20 from "../assets/diabetes/Teneligliptin.png";
 
+/**
+ * Single source of truth for Diabetes product offers.
+ * - Maintains typed data (model)
+ * - Provides pure helper functions (controller)
+ * - Keeps view code (tsx) focused on presentation
+ */
 
-// ===============================================================
-// 🧩 Type Definition
-// ===============================================================
+/* ===========================
+   Types
+   =========================== */
+
 export interface Offer {
   id: string;
   name: string;
   image: string | StaticImageData;
   description: string;
-  discount: number;
-  price: number;
-  oldPrice: number;
+  discount: number; // integer percent 0..100
+  price: number; // current price (KES)
+  oldPrice: number; // original list price (KES)
 }
 
-// ===============================================================
-// 📦 Centralized Diabetes Product Data
-// ===============================================================
+/* ===========================
+   Constants & Small Utilities
+   =========================== */
+
+const CURRENCY = "KES";
+const DEFAULT_NOT_FOUND = "/not-found";
+
+/** clamp discount to a safe integer range */
+const sanitizeDiscount = (d: number) =>
+  Number.isFinite(d) ? Math.max(0, Math.min(100, Math.round(d))) : 0;
+
+/** round prices to whole numbers (KES typical) */
+const roundPrice = (p: number) => Math.round(Number(p) || 0);
+
+/** Build SEO-friendly slug from a product name */
+const buildSlug = (name: string) =>
+  name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+/** Format price for display (keeps view code simple) */
+export const formatPrice = (price: number, currency = CURRENCY): string =>
+  `${currency} ${roundPrice(price).toLocaleString()}`;
+
+/* ===========================
+   Raw Data (Model)
+   =========================== */
+
 export const offersData: Offer[] = [
   {
     id: "1",
@@ -242,49 +278,97 @@ export const offersData: Offer[] = [
   },
 ];
 
-// ===============================================================
-// 🛠️ Utility Functions
-// ===============================================================
+/* ===========================
+   In-memory helpers / cache (controller utilities)
+   =========================== */
 
-/** Fetch a single offer by ID */
-export const getOfferById = (id: string): Offer | undefined =>
-  offersData.find((offer) => offer.id === id);
+/**
+ * Lightweight lookup cache to speed repeated id lookups in runtime.
+ * Not required, but keeps repeated calculations out of view logic.
+ */
+const idCache = new Map<string, Offer | undefined>();
 
-/** Generate SEO-friendly product URL */
+/* ===========================
+   Public API (pure functions)
+   =========================== */
+
+/**
+ * Get a single offer by id.
+ * Returns undefined when not found.
+ */
+export const getOfferById = (id: string): Offer | undefined => {
+  if (!id) return undefined;
+  if (idCache.has(id)) return idCache.get(id);
+  const found = offersData.find((o) => o.id === id);
+  idCache.set(id, found);
+  return found;
+};
+
+/**
+ * Build a product URL for routing (SEO-friendly).
+ * Example: `/diabetes/metformin-500mg-glucophage-1`
+ */
 export const getProductURL = (id: string): string => {
   const offer = getOfferById(id);
-  if (!offer) return "/not-found";
-  const slug = offer.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  if (!offer) return DEFAULT_NOT_FOUND;
+  const slug = buildSlug(offer.name);
   return `/diabetes/${slug}-${offer.id}`;
 };
 
-/** Retrieve all offers */
-export const getAllOffers = (): Offer[] => offersData;
+/**
+ * Return a shallow copy of all offers (prevents accidental mutation).
+ */
+export const getAllOffers = (): Offer[] => offersData.map((o) => ({ ...o }));
 
-/** Retrieve offers sorted by discount (popular offers first) */
+/**
+ * Return offers sorted by discount (descending) — useful for "popular" or "deals" sections.
+ */
 export const getPopularOffers = (): Offer[] =>
-  [...offersData].sort((a, b) => b.discount - a.discount);
+  [...offersData].sort((a, b) => sanitizeDiscount(b.discount) - sanitizeDiscount(a.discount));
 
-/** Search for offers by keyword */
+/**
+ * Basic search (name + description) -> case-insensitive
+ */
 export const searchOffers = (query: string): Offer[] => {
-  const lower = query.toLowerCase();
+  const q = (query || "").trim().toLowerCase();
+  if (!q) return getAllOffers();
   return offersData.filter(
-    (o) =>
-      o.name.toLowerCase().includes(lower) ||
-      o.description.toLowerCase().includes(lower)
+    (o) => o.name.toLowerCase().includes(q) || o.description.toLowerCase().includes(q)
   );
 };
 
-/** Calculate effective price after discount */
-export const calculateDiscountPrice = (price: number, discount: number): number =>
-  Math.round(price - (price * discount) / 100);
+/**
+ * Pagination helper for lists (keeps controller/view small).
+ * page: 1-indexed
+ */
+export const paginateOffers = (page = 1, perPage = 8) => {
+  const p = Math.max(1, Math.trunc(page));
+  const size = Math.max(1, Math.trunc(perPage));
+  const start = (p - 1) * size;
+  const items = offersData.slice(start, start + size).map((o) => ({ ...o }));
+  const total = offersData.length;
+  const totalPages = Math.ceil(total / size);
+  return { items, page: p, perPage: size, total, totalPages };
+};
 
-// ===============================================================
-// ✅ Export Default (optional fallback)
-// ===============================================================
+/**
+ * Calculate effective price after discount (rounded).
+ * Pure and deterministic.
+ */
+export const calculateDiscountPrice = (price: number, discount: number): number => {
+  const sanitizedDiscount = sanitizeDiscount(discount);
+  const base = roundPrice(price);
+  const discounted = Math.round(base - (base * sanitizedDiscount) / 100);
+  return Math.max(0, discounted);
+};
+
+/* ===========================
+   Optional exports (convenience)
+   =========================== */
+
+export const getOfferPriceDisplay = (offer: Offer) =>
+  `${formatPrice(calculateDiscountPrice(offer.price, offer.discount))}`;
+
 export default {
   offersData,
   getOfferById,
@@ -292,5 +376,8 @@ export default {
   getPopularOffers,
   getProductURL,
   searchOffers,
+  paginateOffers,
   calculateDiscountPrice,
+  formatPrice,
+  getOfferPriceDisplay,
 };

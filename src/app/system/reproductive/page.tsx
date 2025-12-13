@@ -1,160 +1,137 @@
+// src/app/system/reproductive/page.tsx
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import styles from "../Shop.module.css";
+import { Heart, Eye } from "lucide-react";
+import { toast } from "sonner";
 
-interface Product {
-  id: number;
+import styles from "./Reproductive.module.css";
+import SexualData from "@/data/details/sexualData";
+
+const { products, formatPrice } = SexualData;
+
+// ===============================================================
+// 🧩 Product Card — Memoized
+// ===============================================================
+interface ProductCardProps {
   name: string;
-  image: string;
   price: number;
-  category: string;
-  stock: string;
+  oldPrice?: number;
+  image: string;
+  slug: string;
+  badge?: string;
+  onOpen: (slug: string) => void;
 }
 
-const products: Product[] = [
-  {
-    id: 1,
-    name: "Cartil Omega 30’s",
-    image: "/images/cartil-omega.jpg",
-    price: 2395,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 2,
-    name: "Cartil Collagen Caps 30’s",
-    image: "/images/cartil-collagen.jpg",
-    price: 2747,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 3,
-    name: "Cartimove-D Tabs 30’s",
-    image: "/images/cartimove-d.jpg",
-    price: 1714,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 4,
-    name: "Cartimove Tabs 30’s",
-    image: "/images/cartimove.jpg",
-    price: 1420,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 5,
-    name: "Cartimove Tabs 30’s",
-    image: "/images/cartimove.jpg",
-    price: 1420,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 6,
-    name: "Cartimove Tabs 30’s",
-    image: "/images/cartimove.jpg",
-    price: 1420,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 7,
-    name: "Cartimove Tabs 30’s",
-    image: "/images/cartimove.jpg",
-    price: 1420,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 8,
-    name: "Cartimove Tabs 30’s",
-    image: "/images/cartimove.jpg",
-    price: 1420,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 9,
-    name: "Cartimove Tabs 30’s",
-    image: "/images/cartimove.jpg",
-    price: 1420,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-  {
-    id: 10,
-    name: "Cartimove Tabs 30’s",
-    image: "/images/cartimove.jpg",
-    price: 1420,
-    category: "Joint Supplements",
-    stock: "In Stock",
-  },
-];
+const ProductCard = memo(
+  ({ name, price, oldPrice, image, slug, badge, onOpen }: ProductCardProps) => {
+    const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-const GUT: React.FC = () => {
-  return (
-    <section className={styles.shopSection} aria-labelledby="joint-supplements-title">
-      <div className={styles.header}>
-        <h2 id="joint-supplements-title">Shop</h2>
-        <div className={styles.subCategory}>
-          <label>Subcategory:</label>
-          <span>Joint Supplements</span>
+    const handleAddCart = useCallback(
+      (e: React.MouseEvent) => {
+        stop(e);
+        toast.success(`${name} added to cart`);
+      },
+      [name]
+    );
+
+    const handleWishlist = useCallback(
+      (e: React.MouseEvent) => {
+        stop(e);
+        toast.success(`${name} added to wishlist`);
+      },
+      [name]
+    );
+
+    return (
+      <article
+        className={styles.card}
+        onClick={() => onOpen(slug)}
+        role="button"
+        tabIndex={0}
+      >
+        {badge && <span className={styles.badge}>{badge}</span>}
+
+        <div className={styles.actions}>
+          <button
+            aria-label="Add to wishlist"
+            className={styles.iconBtn}
+            onClick={handleWishlist}
+          >
+            <Heart size={18} strokeWidth={2} />
+          </button>
+
+          <button aria-label="See details" className={styles.iconBtn} onClick={stop}>
+            <Eye size={18} strokeWidth={2} />
+          </button>
         </div>
-      </div>
 
-      <div className={styles.grid} role="list">
-        {products.map((product) => (
-          <article key={product.id} className={styles.card} role="listitem">
-            <div className={styles.imageWrapper}>
-              <Image
-                src={product.image}
-                alt={product.name}
-                width={450}
-                height={450}
-                className={styles.image}
-                loading="lazy"
-              />
+        <div className={styles.imageWrapper}>
+          <Image
+            src={image}
+            alt={name}
+            fill
+            sizes="(max-width: 768px) 100vw, 300px"
+            className={styles.image}
+          />
+        </div>
 
-              <span className={styles.stockBadge}>
-                {product.stock}
-              </span>
-            </div>
+        <div className={styles.info}>
+          <h3>{name}</h3>
+          <div className={styles.priceRow}>
+            <span className={styles.current}>{formatPrice(price)}</span>
+            {oldPrice && <span className={styles.old}>{formatPrice(oldPrice)}</span>}
+          </div>
 
-            <div className={styles.details}>
-              <p className={styles.category}>{product.category}</p>
+          <button className={styles.addBtn} onClick={handleAddCart}>
+            + Add to Cart
+          </button>
+        </div>
+      </article>
+    );
+  }
+);
 
-              <h3 className={styles.name}>{product.name}</h3>
+ProductCard.displayName = "ProductCard";
 
-              <p className={styles.price}>KES {product.price.toLocaleString()}</p>
-            </div>
+// ===============================================================
+// 🎯 Popular Products Page — Controller + View
+// ===============================================================
+const PopularProducts: React.FC = () => {
+  const router = useRouter();
 
-            <div className={styles.actions}>
-              <button
-                type="button"
-                className={styles.addToCart}
-                aria-label={`Add ${product.name} to cart`}
-              >
-                Add to Cart
-              </button>
+  const openProduct = useCallback(
+    (slug: string) => router.push(`/dropups/sexual/${encodeURIComponent(slug)}`),
+    [router]
+  );
 
-              <button
-                type="button"
-                className={styles.moreInfo}
-                aria-label={`More info about ${product.name}`}
-              >
-                More Info
-              </button>
-            </div>
-          </article>
+  return (
+    <section className={styles.container}>
+      <header className={styles.header}>
+        <h2>Popular Products</h2>
+        <a href="/view-all" className={styles.viewAll}>
+          View All
+        </a>
+      </header>
+
+      <div className={styles.grid}>
+        {products.map((p) => (
+          <ProductCard
+            key={p.slug}
+            name={p.name}
+            price={p.price}
+            oldPrice={p.oldPrice}
+            image={p.image}
+            slug={p.slug}
+            badge={p.badge}
+            onOpen={openProduct}
+          />
         ))}
       </div>
     </section>
   );
 };
 
-export default memo(GUT);
+export default PopularProducts;

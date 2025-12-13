@@ -1,39 +1,47 @@
 // ===============================================================
 // 💊 /conditions/diabetes/page.tsx — Diabetes Drug Offers
-// Next.js 16 / Modernized & Optimized
+// Modern • Minimal • DRY • Error-Proof (Next.js 16 Ready)
 // ===============================================================
 
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
+
 import styles from "../Offers.module.css";
-import { getAllOffers, type Offer } from "@/data/diabetesData";
+import { getAllOffers, type Offer } from "@/data/diabetes1Data";
 import { useCart } from "@/context/CartContext";
+
+// ===============================================================
+// 🔗 Utility — Generate details URL
+// ===============================================================
+const detailsURL = (slug: string) => `/dropups/diabetes/${slug}`;
 
 // ===============================================================
 // 🧩 Diabetes Component
 // ===============================================================
 const Diabetes: React.FC = memo(() => {
   const { addToCart } = useCart();
-  const offers = getAllOffers(); // dynamic fetch
 
-  const handleAddToCart = (offer: Offer) => {
-    addToCart({
-      id: offer.id,
-      name: offer.name,
-      price: offer.price,
-      image: offer.image,
-      quantity: 1,
-    });
-    toast.success(`${offer.name} added to cart 🛒`, { duration: 2000 });
+  // Defensive + memoized data
+  const offers = useMemo<Offer[]>(() => {
+    const data = getAllOffers();
+    return Array.isArray(data) ? data : [];
+  }, []);
+
+  // Cart Handler
+  const handleAddToCart = (offer: Offer, e: React.MouseEvent) => {
+    e.stopPropagation(); // avoid parent onClick
+    addToCart({ ...offer, quantity: 1 });
+    toast.success(`${offer.name} added to cart 🛒`);
   };
 
   return (
     <section className={styles.offersSection}>
+      {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.title}>Top Diabetes Drug Offers</h2>
         <Link href="/diabetes-products" className={styles.viewAll}>
@@ -41,27 +49,36 @@ const Diabetes: React.FC = memo(() => {
         </Link>
       </div>
 
+      {/* Grid */}
       <div className={styles.offersGrid}>
         {offers.map((offer) => (
-          <div key={offer.id} className={styles.card} style={{ cursor: "pointer" }}>
-            {/* Discount Badge */}
+          <div
+            key={offer.id}
+            className={styles.card}
+            role="button"
+            tabIndex={0}
+            onClick={() => (window.location.href = detailsURL(offer.slug))}
+            onKeyDown={(e) => e.key === "Enter" && (window.location.href = detailsURL(offer.slug))}
+          >
+            {/* Discount */}
             <div className={styles.discountTag}>-{offer.discount}%</div>
 
-            {/* Product Image */}
+            {/* Image */}
             <div className={styles.imageWrapper}>
               <Image
                 src={offer.image}
                 alt={offer.name}
                 width={200}
                 height={200}
-                className={styles.productImage}
                 loading="lazy"
+                className={styles.productImage}
               />
             </div>
 
-            {/* Product Info */}
+            {/* Info */}
             <div className={styles.info}>
               <p className={styles.name}>{offer.name}</p>
+
               <div className={styles.prices}>
                 <span className={styles.newPrice}>
                   KSh {offer.price.toLocaleString()}
@@ -76,14 +93,20 @@ const Diabetes: React.FC = memo(() => {
             <div className={styles.actions}>
               <button
                 className={styles.addToCart}
-                onClick={(e) => {
-                  e.stopPropagation(); // prevent card click
-                  handleAddToCart(offer);
-                }}
+                onClick={(e) => handleAddToCart(offer, e)}
+                aria-label={`Add ${offer.name} to cart`}
               >
                 <ShoppingCart size={18} strokeWidth={1.8} />
                 <span>Add to Cart</span>
               </button>
+
+              <Link
+                href={detailsURL(offer.slug)}
+                className={styles.detailsBtn}
+                onClick={(e) => e.stopPropagation()}
+              >
+                View Details →
+              </Link>
             </div>
           </div>
         ))}
@@ -93,7 +116,7 @@ const Diabetes: React.FC = memo(() => {
 });
 
 // ===============================================================
-// ✅ Page Export
+// 🌟 Page Export
 // ===============================================================
 export default function Page() {
   return <Diabetes />;

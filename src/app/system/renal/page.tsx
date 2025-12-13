@@ -1,83 +1,129 @@
-// File: src/components/renal.tsx
+//src /app/system/renal/page.tsx
 
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { useCart } from "@/context/CartContext"; // adjust path if your context lives elsewhere
+
+import { useCart } from "@/context/CartContext";
+import renalData from "@/data/RenalData";
+import type { renalProduct } from "@/data/RenalData";
+
 import styles from "../Shop.module.css";
 
-import { Product, PRODUCTS } from "@/data/RenalData";
+// ---------------------------------------------------------------------------
+// Controller bindings (SSOT — view consumes helpers only)
+// ---------------------------------------------------------------------------
+const { PRODUCTS, formatPrice, getStockStatus } = renalData;
 
-const Renal: React.FC = memo(() => {
+// ---------------------------------------------------------------------------
+// View Component
+// ---------------------------------------------------------------------------
+const RenalSystemPage: React.FC = memo(() => {
   const { addToCart } = useCart();
 
-  const handleAddToCart = (product: Product) => {
-    addToCart({
-      id: String(product.id), // convert number -> string if cart expects string id
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-      inStock: product.stock.toLowerCase().includes("in"),
-    });
-    toast.success(`${product.name} added to cart`);
-  };
+  // -------------------------------------------------------------------------
+  // Add to cart (integration boundary only)
+  // -------------------------------------------------------------------------
+  const handleAddToCart = useCallback(
+    (product: renalProduct) => {
+      addToCart({
+        id: String(product.id),
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+        inStock: product.stock === "In Stock",
+      });
 
+      toast.success(`${product.name} added to cart`);
+    },
+    [addToCart]
+  );
+
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
   return (
     <section className={styles.shopSection}>
-      <div className={styles.header}>
+      {/* Header */}
+      <header className={styles.header}>
         <h2>Shop</h2>
         <div className={styles.subCategory}>
-          <label>Subcategory:</label>
-          <span>Renal/Urinary System</span>
+          <label>System:</label>
+          <span>Renal / Urinary</span>
         </div>
-      </div>
+      </header>
 
+      {/* Product Grid */}
       <div className={styles.grid}>
-        {PRODUCTS.map((product) => (
-          <article key={product.id} className={styles.card}>
-            <div className={styles.imageWrapper}>
-              {/* Next/Image handles optimization. product.image can be imported StaticImageData or string */}
-              <Image
-                src={product.image as any}
-                alt={product.name}
-                fill={false}
-                width={240}
-                height={160}
-                loading="lazy"
-                className={styles.image}
-                priority={false}
-              />
-              <span className={styles.stockBadge}>{product.stock}</span>
-            </div>
+        {PRODUCTS.map((product) => {
+          const inStock = product.stock === "In Stock";
 
-            <div className={styles.details}>
-              <p className={styles.category}>{product.category}</p>
-              <h3 className={styles.name}>{product.name}</h3>
-              <p className={styles.price}>KES {product.price.toLocaleString()}</p>
-            </div>
+          return (
+            <article key={product.slug} className={styles.card}>
+              {/* Image */}
+              <div className={styles.imageWrapper}>
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={240}
+                  height={160}
+                  loading="lazy"
+                  className={styles.image}
+                />
 
-            <div className={styles.actions}>
-              <button
-                type="button"
-                className={styles.addToCart}
-                onClick={() => handleAddToCart(product)}
-              >
-                🛒 Add to Cart
-              </button>
+                <span
+                  className={`${styles.stockBadge} ${
+                    inStock ? styles.inStock : styles.outStock
+                  }`}
+                >
+                  {getStockStatus(product)}
+                </span>
+              </div>
 
-              <Link href={`/product/${product.id}`} className={styles.moreInfo}>
-                More Info
-              </Link>
-            </div>
-          </article>
-        ))}
+              {/* Details */}
+              <div className={styles.details}>
+                <p className={styles.category}>{product.category}</p>
+                <h3 className={styles.name}>{product.name}</h3>
+                <p className={styles.price}>{formatPrice(product.price)}</p>
+
+                {/* Clinical Tags (View-safe, non-polluting) */}
+                <div className={styles.tags}>
+                  <span className={styles.tag}>KDIGO</span>
+                  <span className={styles.tag}>NICE</span>
+                  <span className={styles.tag}>BNF</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.addToCart}
+                  disabled={!inStock}
+                  onClick={() => handleAddToCart(product)}
+                >
+                  🛒 Add to Cart
+                </button>
+
+                <Link
+                  href={`/dropups/renal/${product.slug}`}
+                  className={styles.moreInfo}
+                >
+                  More Info
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
 });
 
-export default Renal;
+RenalSystemPage.displayName = "RenalSystemPage";
+
+export default RenalSystemPage;

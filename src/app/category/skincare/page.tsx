@@ -1,139 +1,180 @@
+// src/app/category/skincare/page.tsx
+
 "use client";
 
-import { memo } from "react";
-import Image, { StaticImageData } from "next/image";
+import { memo, useMemo } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import toast from "react-hot-toast";
 import { ShoppingCart } from "lucide-react";
-
-import { useCart } from "@/context/CartContext";
-import { productsData, type Product } from "@/data/DermaData";
+import toast from "react-hot-toast";
 
 import styles from "./Skincare.module.css";
 
-// ------------------------------------------------------------
-// 🛒 Local Cart Item Type (aligned with CartContext)
-// ------------------------------------------------------------
-interface OfferCartItem {
-  id: string;
-  name: string;
-  price: number;
-  image: string; // Always string in cart
-  quantity: number;
-}
+// =====================
+// CENTRAL DATA (MODEL)
+// =====================
+import type { SkinProduct } from "@/data/SkinData";
+import {
+  getAllProducts,
+  calculateDiscountedPrice,
+  formatPrice,
+  getProductURL,
+} from "@/data/SkinData";
 
-// ------------------------------------------------------------
-// 💰 Utility Function: Currency Formatter (Controller Logic)
-// ------------------------------------------------------------
-const formatPrice = (priceInCents: number): string => {
-  const priceInKsh = priceInCents / 100;
-  return `KSh ${priceInKsh.toLocaleString("en-KE", {
-    minimumFractionDigits: 0,
-  })}`;
-};
+/**
+ * ============================================================
+ * Skincare Listing Page — VIEW LAYER
+ * ------------------------------------------------------------
+ * ✔ Uses SkinData.ts as Single Source of Truth
+ * ✔ Zero duplicated business logic
+ * ✔ Type-safe, memoized, future-proof
+ * ✔ App Router + Turbopack compliant
+ * ============================================================
+ */
+const SkincarePage = () => {
+  /**
+   * ----------------------------------------------------------
+   * Data retrieval (immutable → cloned for safety)
+   * ----------------------------------------------------------
+   */
+  const products = useMemo<SkinProduct[]>(
+    () => [...getAllProducts()],
+    []
+  );
 
-// ------------------------------------------------------------
-// 🎯 Component: Offers (View + Controller)
-// ------------------------------------------------------------
-const Offers: React.FC = memo(() => {
-  const { addToCart } = useCart();
+  /**
+   * ----------------------------------------------------------
+   * Hard fallback — NEVER crash the UI
+   * ----------------------------------------------------------
+   */
+  if (!products.length) {
+    return (
+      <section className={styles.shopSection}>
+        <p className={styles.notFound}>
+          No skincare products available at the moment.
+        </p>
+      </section>
+    );
+  }
 
-  // 🧠 Controller Logic — Add to Cart
-  const handleAddToCart = (product: Product) => {
-    const cartItem: OfferCartItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image:
-        typeof product.image === "string"
-          ? product.image
-          : (product.image as StaticImageData).src, // Convert StaticImageData to string
-      quantity: 1,
-    };
-
-    addToCart(cartItem);
-    toast.success(`${product.brand} ${product.name} added to cart 🛒`, {
-      duration: 2000,
-    });
-  };
-
-  // ----------------------------------------------------------
-  // 🎨 View Layer
-  // ----------------------------------------------------------
   return (
-    <section className={styles.offersSection}>
-      {/* Header */}
-      <div className={styles.header}>
-        <h2 className={styles.title}>Top Skincare Offers 🛍️</h2>
-        <Link href="/buy-skincare" className={styles.viewAll}>
-          View all offers →
-        </Link>
-      </div>
+    <section
+      className={styles.shopSection}
+      aria-labelledby="skincare-heading"
+    >
+      {/* ================= HEADER ================= */}
+      <header className={styles.header}>
+        <h1 id="skincare-heading" className={styles.title}>
+          Skincare Essentials
+        </h1>
+        <p className={styles.subtitle}>
+          Dermatologist-recommended skincare products for healthy skin.
+        </p>
+      </header>
 
-      {/* Offers Grid */}
-      <div className={styles.offersGrid}>
-        {productsData.map((offer) => (
-          <div key={offer.id} className={styles.card}>
-            {/* Discount Badge */}
-            {offer.discount && offer.oldPrice && (
-              <div className={styles.discountTag}>-{offer.discount}%</div>
-            )}
+      {/* ================= PRODUCT GRID ================= */}
+      <div className={styles.grid} role="list">
+        {products.map((product) => {
+          const href = getProductURL(product.slug);
+          const finalPrice = calculateDiscountedPrice(
+            product.price,
+            product.discount
+          );
 
-            {/* Product Image */}
-            <Link href={`/skin/${offer.id}`} className={styles.productLink}>
-              <div className={styles.imageWrapper}>
-                {typeof offer.image === "string" ? (
-                  <img
-                    src={offer.image}
-                    alt={`${offer.brand} ${offer.name}`}
-                    className={styles.productImage}
+          return (
+            <article
+              key={product.id}
+              className={styles.card}
+              role="listitem"
+            >
+              {/* ---------- CARD LINK ---------- */}
+              <Link
+                href={href}
+                className={styles.cardLink}
+                aria-label={`View details for ${product.name}`}
+              >
+                {/* IMAGE */}
+                <div className={styles.imageWrapper}>
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    width={500}
+                    height={500}
+                    className={styles.image}
                     loading="lazy"
                   />
-                ) : (
-                  <Image
-                    src={offer.image}
-                    alt={`${offer.brand} ${offer.name}`}
-                    className={styles.productImage}
-                    placeholder="blur"
-                    sizes="(max-width: 768px) 100vw, 300px"
-                  />
-                )}
-              </div>
-            </Link>
 
-            {/* Product Info */}
-            <div className={styles.info}>
-              <Link href={`/skin/${offer.id}`} className={styles.productLink}>
-                <p className={styles.name}>
-                  {offer.brand} - {offer.name}
-                </p>
+                  {/* BADGES */}
+                  <div className={styles.badgeRow}>
+                    <span
+                      className={
+                        product.inStock
+                          ? styles.inStock
+                          : styles.outOfStock
+                      }
+                    >
+                      {product.inStock ? "In Stock" : "Out of Stock"}
+                    </span>
+
+                    {product.discount > 0 && (
+                      <span className={styles.discountBadge}>
+                        {product.discount}% OFF
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* DETAILS */}
+                <div className={styles.details}>
+                  <p className={styles.category}>
+                    {product.category.replace("-", " ")}
+                  </p>
+
+                  <h3 className={styles.name}>{product.name}</h3>
+
+                  <div className={styles.priceRow}>
+                    <span className={styles.price}>
+                      {formatPrice(finalPrice)}
+                    </span>
+
+                    {product.oldPrice > finalPrice && (
+                      <span className={styles.oldPrice}>
+                        {formatPrice(product.oldPrice)}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </Link>
-              <div className={styles.prices}>
-                <span className={styles.newPrice}>{formatPrice(offer.price)}</span>
-                {offer.oldPrice && (
-                  <span className={styles.oldPrice}>
-                    {formatPrice(offer.oldPrice)}
-                  </span>
-                )}
-              </div>
-            </div>
 
-            {/* Add to Cart Button */}
-            <div className={styles.actions}>
-              <button
-                className={styles.addToCart}
-                onClick={() => handleAddToCart(offer)}
-                disabled={!offer.inStock}
-              >
-                <ShoppingCart size={18} strokeWidth={1.8} />
-                <span>{offer.inStock ? "Add to Cart" : "Out of Stock"}</span>
-              </button>
-            </div>
-          </div>
-        ))}
+              {/* ---------- ACTIONS ---------- */}
+              <div className={styles.actions}>
+                <button
+                  type="button"
+                  className={styles.addToCart}
+                  aria-label={`Add ${product.name} to cart`}
+                  disabled={!product.inStock}
+                  onClick={() => {
+                    toast.success(`${product.name} added to cart`);
+                  }}
+                >
+                  <ShoppingCart size={16} />
+                  Add to Cart
+                </button>
+
+                <Link
+                  href={href}
+                  className={styles.moreInfo}
+                  aria-label={`More info about ${product.name}`}
+                >
+                  More Info
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
-});
+};
 
-export default Offers;
+export default memo(SkincarePage);

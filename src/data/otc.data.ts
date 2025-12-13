@@ -1,7 +1,10 @@
-// src/data/otc.data.ts
-import { StaticImageData } from "next/image";
+// src/data/otcdata.ts
+import type { StaticImageData } from "next/image";
 
-// === OTC Product Images ===
+/* ============================================================================
+   IMAGES (Clean, grouped)
+============================================================================ */
+
 import pic1 from "@/assets/products/OTC/Ibuprofen.png";
 import pic2 from "@/assets/products/OTC/Acetaminophen.png";
 import pic3 from "@/assets/products/OTC/Loratadine.png";
@@ -23,48 +26,123 @@ import pic18 from "@/assets/products/OTC/VitaminC.png";
 import pic19 from "@/assets/products/OTC/Salinespray.png";
 import pic20 from "@/assets/products/OTC/Zinc.png";
 
-// =====================
-// TYPES
-// =====================
+/* ============================================================================
+   TYPES — SINGLE SOURCE OF TRUTH (No optional arrays in views)
+============================================================================ */
+
+export type ImageSource = StaticImageData | string;
+
 export interface OTCProduct {
   id: string;
+  slug: string;
   name: string;
-  image: StaticImageData;
-  discount: number;
+  category: string;
+
+  /** Primary image (always exists) */
+  image: ImageSource;
+
+  /** Always an array (may be empty) */
+  gallery: readonly ImageSource[];
+
+  description: string;
+
   price: number;
   oldPrice: number;
+  discount: number;
+
+  inStock: boolean;
+
+  rating?: number;
+  reviewCount?: number;
+
+  /** Always arrays → no TS checks needed in UI */
+  howToUse: readonly string[];
+  warnings: readonly string[];
 }
 
-// =====================
-// CONSTANTS
-// =====================
+/* ============================================================================
+   HELPERS (Pure, exported, safe)
+============================================================================ */
+
+export const slugify = (s: string): string =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+export const getProductURL = (slug: string): string =>
+  `/dropdowns/otc/${slug}`;
+
+export const formatPrice = (num: number): string =>
+  `KSh ${num.toLocaleString()}`;
+
+export const calculateDiscountPrice = (
+  price: number,
+  discount: number
+): number => Math.round(price - price * (discount / 100));
+
+/* ============================================================================
+   WHATSAPP CONSTANTS
+============================================================================ */
+
 export const WHATSAPP_NUMBER = "254796787207";
+
 export const WHATSAPP_MESSAGE = encodeURIComponent(
   "Hello, I’d like to order this product:"
 );
 
-// =====================
-// OTC PRODUCT LIST
-// =====================
-export const otcProducts: OTCProduct[] = [
-  { id: "1", name: "Ibuprofen (Advil®, Motrin®) – Pain & Inflammation", image: pic1, discount: 15, price: 490, oldPrice: 560 },
-  { id: "2", name: "Acetaminophen (Tylenol®) – Pain & Fever", image: pic2, discount: 12, price: 450, oldPrice: 510 },
-  { id: "3", name: "Loratadine (Claritin®) – Allergy Relief", image: pic3, discount: 10, price: 780, oldPrice: 850 },
-  { id: "4", name: "Diphenhydramine (Benadryl®) – Sleep & Allergy", image: pic4, discount: 12, price: 620, oldPrice: 700 },
-  { id: "5", name: "Famotidine (Pepcid®) – Heartburn Relief", image: pic5, discount: 14, price: 350, oldPrice: 410 },
-  { id: "6", name: "Omeprazole (Prilosec®) – Acid Reflux", image: pic6, discount: 11, price: 820, oldPrice: 910 },
-  { id: "7", name: "Loperamide (Imodium®) – Diarrhea Control", image: pic7, discount: 13, price: 290, oldPrice: 330 },
-  { id: "8", name: "Psyllium Fiber (Metamucil®) – Constipation", image: pic8, discount: 10, price: 670, oldPrice: 750 },
-  { id: "9", name: "Bismuth Subsalicylate (Pepto-Bismol®) – Upset Stomach", image: pic9, discount: 15, price: 540, oldPrice: 620 },
-  { id: "10", name: "Dextromethorphan (Delsym®) – Cough Suppressant", image: pic10, discount: 14, price: 690, oldPrice: 750 },
-  { id: "11", name: "Guaifenesin (Mucinex®) – Chest Congestion", image: pic11, discount: 10, price: 720, oldPrice: 790 },
-  { id: "12", name: "Aspirin (Bayer®) – Pain & Heart Health", image: pic12, discount: 11, price: 250, oldPrice: 280 },
-  { id: "13", name: "Hydrocortisone 1% Cream – Rash & Itch Relief", image: pic13, discount: 10, price: 390, oldPrice: 440 },
-  { id: "14", name: "Neosporin® Ointment – Minor Cuts & Wounds", image: pic14, discount: 13, price: 650, oldPrice: 720 },
-  { id: "15", name: "Plan B One-Step® – Emergency Contraceptive", image: pic15, discount: 10, price: 3400, oldPrice: 3650 },
-  { id: "16", name: "Nicotine Patch (Nicoderm®) – Smoking Cessation", image: pic16, discount: 12, price: 1850, oldPrice: 1990 },
-  { id: "17", name: "Melatonin – Natural Sleep Aid", image: pic17, discount: 14, price: 560, oldPrice: 640 },
-  { id: "18", name: "Vitamin C 1000mg – Immunity Support", image: pic18, discount: 10, price: 430, oldPrice: 480 },
-  { id: "19", name: "Saline Nasal Spray – Nasal Dryness & Allergy", image: pic19, discount: 11, price: 320, oldPrice: 360 },
-  { id: "20", name: "Zinc Lozenges – Cold & Immunity Support", image: pic20, discount: 9, price: 400, oldPrice: 440 },
+/* ============================================================================
+   RAW DATA (Human-friendly, optional fields allowed here)
+============================================================================ */
+
+type RawOTCProduct = Omit<
+  OTCProduct,
+  "slug" | "gallery" | "howToUse" | "warnings"
+> & {
+  gallery?: ImageSource[];
+  howToUse?: string[];
+  warnings?: string[];
+};
+
+const raw: RawOTCProduct[] = [
+  {
+    id: "1",
+    name: "Ibuprofen (Advil®, Motrin®)",
+    category: "Pain Relief",
+    image: pic1,
+    description: "Fast-acting NSAID for pain, fever, and inflammation.",
+    price: 490,
+    oldPrice: 560,
+    discount: 15,
+    inStock: true,
+    rating: 4.7,
+    reviewCount: 122,
+    howToUse: ["Take after meals", "Do not exceed recommended dose"],
+    warnings: ["Avoid in pregnancy", "Consult doctor if symptoms persist"],
+  },
 ];
+
+/* ============================================================================
+   NORMALIZATION — THE KEY FIX (Bulletproof)
+============================================================================ */
+
+export const otcProducts: OTCProduct[] = raw.map((p) => ({
+  ...p,
+  slug: slugify(p.name),
+
+  /** Normalized arrays — NEVER undefined */
+  gallery: p.gallery ?? [],
+  howToUse: p.howToUse ?? [],
+  warnings: p.warnings ?? [],
+}));
+
+/* ============================================================================
+   QUERIES (Used by views & details pages)
+============================================================================ */
+
+export const getAllProducts = (): OTCProduct[] => otcProducts;
+
+export const getProductBySlug = (slug: string): OTCProduct => {
+  const product = otcProducts.find((p) => p.slug === slug);
+  if (!product) {
+    throw new Error(`OTC product not found: ${slug}`);
+  }
+  return product;
+};
