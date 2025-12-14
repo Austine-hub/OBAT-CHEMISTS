@@ -30,7 +30,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               <li><a href="/medical-devices">Medical Devices</a></li>
               <li><a href="/snacks-drinks">Snacks and Drinks</a></li>
               <li><a href="/offers">Offers</a></li>
-              <li><a href="/new">New on HEALTHFIELD</a></li>
+              <li><a href="/new">New in my OBAT</a></li>
             </ul>
           </div>
 
@@ -57,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           </div>
 
           <div className={styles.column}>
-            <h3 className={styles.columnTitle}>Telehealth Partners</h3>
+            <h3 className={styles.columnTitle}>MyObat Partners</h3>
             <ul className={styles.linkList}>
               <li><a href="/healthx-africa">HealthX Africa</a></li>
             </ul>
@@ -66,11 +66,11 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           <div className={styles.column}>
             <h3 className={styles.columnTitle}>Authorized Pharmacy</h3>
             <p className={styles.authText}>
-              HEALTHFIELD is a registered pharmacy governed by the Pharmacy and Poisons Board of Kenya, PPB (K) Health Safety code P0940
+             MY OBAT is a registered pharmacy governed by the Pharmacy and Poisons Board of Kenya, PPB (K) Health Safety code P0940
             </p>
             <div className={styles.certificationBadge}>
               <img 
-                src="/images/ppb-certification.png" 
+                src="/license.png" 
                 alt="Pharmacy and Poisons Board Certification" 
                 className={styles.badgeImage}
               />
@@ -106,18 +106,18 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           <div className={styles.mobileSection}>
             <h3 className={styles.mobileSectionTitle}>Telehealth Partners</h3>
             <ul className={styles.linkList}>
-              <li><a href="/healthx-africa">HealthX Africa</a></li>
+              <li><a href="/healthx-africa"> My-OBAT Africa</a></li>
             </ul>
           </div>
 
           <div className={styles.mobileSection}>
             <h3 className={styles.mobileSectionTitle}>Authorized Pharmacy</h3>
             <p className={styles.authText}>
-              HEALTHFIELD is a registered pharmacy governed by the Pharmacy and Poisons Board of Kenya, PPB (K) Health Safety code P0940
+              MY OBAT is a registered pharmacy governed by the Pharmacy and Poisons Board of Kenya, PPB (K) Health Safety code P0940
             </p>
             <div className={styles.certificationBadge}>
                 <img 
-                  src="/images/license.png" 
+                  src="/license.png" 
                   alt="Pharmacy and Poisons Board Certification" 
                   className={styles.badgeImage}
                 />
