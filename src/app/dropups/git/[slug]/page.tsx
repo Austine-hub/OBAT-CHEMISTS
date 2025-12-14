@@ -1,321 +1,175 @@
 // src/app/dropups/git/[slug]/page.tsx
-// ===============================================================
-// ✅ Fully refactored, type-safe, future-proof GitDetailsPage
-// - Fixes: `Cannot find namespace 'JSX'`
-// - Uses ReactNode instead of JSX.Element
-// - Defensive null checks
-// - Cleaner MVC-style separation
-// - DRY, readable, and Next.js 13+ compliant
-// ===============================================================
 
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { useState, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-
 import gitData, { type GitProduct } from "@/data/gitData";
-import styles from "./GitDetails.module.css";
+import s from "./GitDetails.module.css";
 
-// ------------------------------------------------------------------
-// Controller utilities (SSOT)
-// ------------------------------------------------------------------
-const {
-  getProductBySlug,
-  getSimilarProducts,
-  formatPrice,
-  getStockStatus,
-} = gitData;
+const { getProductBySlug, getSimilarProducts, formatPrice, getStockStatus } = gitData;
 
-// ------------------------------------------------------------------
-// Types
-// ------------------------------------------------------------------
-type TabKey = "features" | "description" | "usage";
+type Tab = "features" | "description" | "usage";
 
-// ------------------------------------------------------------------
-// Component
-// ------------------------------------------------------------------
 export default function GitDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
+  const product = useMemo(() => slug ? getProductBySlug(slug) : undefined, [slug]);
 
-  // ---------------------------------------------------------------
-  // MODEL: product resolution
-  // ---------------------------------------------------------------
-  const product: GitProduct | undefined = useMemo(() => {
-    if (!slug) return undefined;
-    return getProductBySlug(slug);
-  }, [slug]);
-
-  // ---------------------------------------------------------------
-  // UI state
-  // ---------------------------------------------------------------
-  const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<TabKey>("features");
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
+  const [qty, setQty] = useState(1);
+  const [tab, setTab] = useState<Tab>("features");
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const inStock = product?.stock === "In Stock";
+  const similar = useMemo(() => product ? getSimilarProducts(product.id, 4) : [], [product]);
 
-  // ---------------------------------------------------------------
-  // Redirect if product not found
-  // ---------------------------------------------------------------
   useEffect(() => {
     if (slug && !product) router.replace("/404");
   }, [slug, product, router]);
 
-  // ---------------------------------------------------------------
-  // Reset UI on slug change
-  // ---------------------------------------------------------------
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setQuantity(1);
-    setActiveTab("features");
-    setImageLoaded(false);
+    setQty(1);
+    setTab("features");
+    setImgLoaded(false);
   }, [slug]);
 
-  // ---------------------------------------------------------------
-  // Similar products
-  // ---------------------------------------------------------------
-  const similarProducts = useMemo(() => {
-    if (!product) return [] as GitProduct[];
-    return getSimilarProducts(product.id, 4);
-  }, [product]);
+  const updateQty = useCallback((val: number) => setQty(Math.max(1, Math.min(99, val))), []);
 
-  // ---------------------------------------------------------------
-  // Quantity logic
-  // ---------------------------------------------------------------
-  const updateQuantity = useCallback((value: number) => {
-    setQuantity(Math.max(1, Math.min(99, value)));
-  }, []);
-
-  // ---------------------------------------------------------------
-  // Cart action (placeholder)
-  // ---------------------------------------------------------------
-  const handleAddToCart = useCallback(() => {
-    if (!product || !inStock || isAdding) return;
-
-    setIsAdding(true);
+  const addToCart = useCallback(() => {
+    if (!product || !inStock || adding) return;
+    setAdding(true);
     setTimeout(() => {
-      console.log(`Added ${quantity}x ${product.name} to cart`);
-      setIsAdding(false);
+      console.log(`Added ${qty}x ${product.name}`);
+      setAdding(false);
     }, 600);
-  }, [product, quantity, inStock, isAdding]);
+  }, [product, qty, inStock, adding]);
 
-  // ---------------------------------------------------------------
-  // Loading skeleton
-  // ---------------------------------------------------------------
   if (!product) {
     return (
-      <div className={styles.container}>
-        <div className={styles.skeleton}>
-          <div className={styles.skeletonImage} />
-          <div className={styles.skeletonContent}>
-            <div className={styles.skeletonTitle} />
-            <div className={styles.skeletonText} />
-            <div className={styles.skeletonButton} />
+      <div className={s.container}>
+        <div className={s.skeleton}>
+          <div className={s.skeletonImg} />
+          <div className={s.skeletonContent}>
+            <div className={s.skeletonTitle} />
+            <div className={s.skeletonText} />
+            <div className={s.skeletonBtn} />
           </div>
         </div>
       </div>
     );
   }
 
-  // ---------------------------------------------------------------
-  // TAB CONTENT (✅ ReactNode instead of JSX.Element)
-  // ---------------------------------------------------------------
-  const tabContent: Record<TabKey, ReactNode> = {
+  const tabs: Record<Tab, ReactNode> = {
     features: (
-      <ul className={styles.featuresList}>
+      <ul className={s.features}>
         {(product.features ?? [
           "Clinically effective for GIT conditions",
           "Manufactured under strict pharmaceutical standards",
           "Reliable therapeutic outcomes",
           "Widely used in gastrointestinal treatment protocols",
-        ]).map((feature, index) => (
-          <li key={index}>{feature}</li>
-        ))}
+        ]).map((f, i) => <li key={i}>{f}</li>)}
       </ul>
     ),
-
-    description: (
-      <div className={styles.description}>
-        <p>{product.fullDescription ?? product.description}</p>
-      </div>
-    ),
-
+    description: <div className={s.desc}><p>{product.fullDescription ?? product.description}</p></div>,
     usage: (
-      <div className={styles.usage}>
-        <p>
-          <strong>How to use:</strong>{" "}
-          {product.howToUse ??
-            "Use exactly as prescribed by a qualified healthcare professional."}
-        </p>
-        <p>
-          <strong>Storage:</strong> Store in a cool, dry place away from sunlight.
-        </p>
-        <p className={styles.warning}>
-          ⚠️ Always follow professional medical advice before use.
-        </p>
+      <div className={s.usage}>
+        <p><strong>How to use:</strong> {product.howToUse ?? "Use exactly as prescribed by a qualified healthcare professional."}</p>
+        <p><strong>Storage:</strong> Store in a cool, dry place away from sunlight.</p>
+        <p className={s.warn}>⚠️ Always follow professional medical advice before use.</p>
       </div>
     ),
   };
 
-  // ---------------------------------------------------------------
-  // VIEW
-  // ---------------------------------------------------------------
   return (
-    <section className={styles.container}>
-      {/* Breadcrumb */}
-      <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-        <Link href="/" className={styles.breadcrumbLink}>Home</Link>
-        <span className={styles.breadcrumbSeparator}>/</span>
-        <Link href="/system/git" className={styles.breadcrumbLink}>GIT System</Link>
-        <span className={styles.breadcrumbSeparator}>/</span>
-        <span className={styles.breadcrumbCurrent}>{product.name}</span>
+    <section className={s.container}>
+      <nav className={s.breadcrumb} aria-label="Breadcrumb">
+        <Link href="/" className={s.bcLink}>Home</Link>
+        <span className={s.bcSep}>/</span>
+        <Link href="/system/git" className={s.bcLink}>GIT System</Link>
+        <span className={s.bcSep}>/</span>
+        <span className={s.bcCurrent}>{product.name}</span>
       </nav>
 
-      {/* Product Details */}
-      <article className={styles.detailsSection}>
-        {/* Image */}
-        <div className={styles.imageWrapper}>
-          <div className={styles.imageContainer}>
-            {!imageLoaded && <div className={styles.imagePlaceholder} />}
+      <article className={s.details}>
+        <div className={s.imgWrap}>
+          <div className={s.imgContainer}>
+            {!imgLoaded && <div className={s.imgPlaceholder} />}
             <Image
               src={product.image}
               alt={product.name}
               width={500}
               height={500}
               priority
-              onLoad={() => setImageLoaded(true)}
-              className={`${styles.productImage} ${
-                imageLoaded ? styles.imageLoaded : ""
-              }`}
+              onLoad={() => setImgLoaded(true)}
+              className={`${s.img} ${imgLoaded ? s.imgLoaded : ""}`}
             />
           </div>
-
-          {!inStock && (
-            <div className={styles.outOfStockBadge}>Out of Stock</div>
-          )}
+          {!inStock && <div className={s.outBadge}>Out of Stock</div>}
         </div>
 
-        {/* Info */}
-        <div className={styles.infoWrapper}>
-          <header className={styles.header}>
-            <span className={styles.category}>{product.category}</span>
-            <h1 className={styles.title}>{product.name}</h1>
+        <div className={s.info}>
+          <header className={s.header}>
+            <span className={s.cat}>{product.category}</span>
+            <h1 className={s.title}>{product.name}</h1>
           </header>
 
-          <div className={styles.priceSection}>
-            <span className={styles.price}>{formatPrice(product.price)}</span>
-            <span
-              className={`${styles.stockBadge} ${
-                inStock ? styles.inStock : styles.outStock
-              }`}
-            >
+          <div className={s.priceSection}>
+            <span className={s.price}>{formatPrice(product.price)}</span>
+            <span className={`${s.stock} ${inStock ? s.stockIn : s.stockOut}`}>
               {getStockStatus(product)}
             </span>
           </div>
 
-          {/* Tabs */}
-          <div className={styles.tabsContainer}>
-            <div className={styles.tabButtons} role="tablist">
-              {(Object.keys(tabContent) as TabKey[]).map((key) => (
+          <div className={s.tabs}>
+            <div className={s.tabBtns} role="tablist">
+              {(Object.keys(tabs) as Tab[]).map((k) => (
                 <button
-                  key={key}
+                  key={k}
                   role="tab"
-                  aria-selected={activeTab === key}
-                  className={`${styles.tabButton} ${
-                    activeTab === key ? styles.activeTab : ""
-                  }`}
-                  onClick={() => setActiveTab(key)}
+                  aria-selected={tab === k}
+                  className={`${s.tabBtn} ${tab === k ? s.tabActive : ""}`}
+                  onClick={() => setTab(k)}
                 >
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                  {k.charAt(0).toUpperCase() + k.slice(1)}
                 </button>
               ))}
             </div>
-
-            <div className={styles.tabContent} role="tabpanel">
-              {tabContent[activeTab]}
-            </div>
+            <div className={s.tabContent} role="tabpanel">{tabs[tab]}</div>
           </div>
 
-          {/* Actions */}
-          <div className={styles.actionsSection}>
-            <div className={styles.quantityControl}>
-              <label className={styles.quantityLabel}>Quantity</label>
-              <div className={styles.quantityButtons}>
-                <button
-                  className={styles.qtyBtn}
-                  onClick={() => updateQuantity(quantity - 1)}
-                  disabled={!inStock || quantity <= 1}
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  className={styles.quantityInput}
-                  value={quantity}
-                  min={1}
-                  max={99}
-                  disabled={!inStock}
-                  onChange={(e) => updateQuantity(Number(e.target.value))}
-                />
-                <button
-                  className={styles.qtyBtn}
-                  onClick={() => updateQuantity(quantity + 1)}
-                  disabled={!inStock || quantity >= 99}
-                >
-                  +
-                </button>
+          <div className={s.actions}>
+            <div className={s.qtyControl}>
+              <label className={s.qtyLabel}>Quantity</label>
+              <div className={s.qtyBtns}>
+                <button className={s.qtyBtn} onClick={() => updateQty(qty - 1)} disabled={!inStock || qty <= 1}>−</button>
+                <input type="number" className={s.qtyInput} value={qty} min={1} max={99} disabled={!inStock} onChange={(e) => updateQty(Number(e.target.value))} />
+                <button className={s.qtyBtn} onClick={() => updateQty(qty + 1)} disabled={!inStock || qty >= 99}>+</button>
               </div>
             </div>
-
-            <button
-              className={`${styles.addToCartBtn} ${
-                !inStock || isAdding ? styles.disabled : ""
-              }`}
-              onClick={handleAddToCart}
-              disabled={!inStock || isAdding}
-            >
-              {isAdding ? "Adding…" : inStock ? "Add to Cart" : "Out of Stock"}
+            <button className={`${s.addBtn} ${!inStock || adding ? s.disabled : ""}`} onClick={addToCart} disabled={!inStock || adding}>
+              {adding ? "Adding…" : inStock ? "Add to Cart" : "Out of Stock"}
             </button>
           </div>
         </div>
       </article>
 
-      {/* Similar Products */}
-      {similarProducts.length > 0 && (
-        <section className={styles.similarSection}>
-          <h2 className={styles.similarTitle}>You May Also Like</h2>
-          <div className={styles.similarGrid}>
-            {similarProducts.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/dropups/git/${item.slug}`}
-                className={styles.similarCard}
-              >
-                <div className={styles.similarImageWrapper}>
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={240}
-                    height={240}
-                    className={styles.similarImage}
-                  />
+      {similar.length > 0 && (
+        <section className={s.similar}>
+          <h2 className={s.similarTitle}>You May Also Like</h2>
+          <div className={s.similarGrid}>
+            {similar.map((item) => (
+              <Link key={item.slug} href={`/dropups/git/${item.slug}`} className={s.card}>
+                <div className={s.cardImgWrap}>
+                  <Image src={item.image} alt={item.name} width={240} height={240} className={s.cardImg} />
                 </div>
-                <div className={styles.similarInfo}>
-                  <h3 className={styles.similarName}>{item.name}</h3>
-                  <p className={styles.similarPrice}>
-                    {formatPrice(item.price)}
-                  </p>
-                  <span className={styles.viewDetails}>View Details →</span>
+                <div className={s.cardInfo}>
+                  <h3 className={s.cardName}>{item.name}</h3>
+                  <p className={s.cardPrice}>{formatPrice(item.price)}</p>
+                  <span className={s.cardView}>View Details →</span>
                 </div>
               </Link>
             ))}
