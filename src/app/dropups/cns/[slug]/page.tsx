@@ -2,174 +2,88 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-
 import cnsData, { type cnsProduct } from "@/data/nervousData";
-import styles from "./CnsDetails.module.css";
+import s from "./CnsDetails.module.css";
 
-/* -------------------------------------------------------------------------- */
-/*                              CONTROLLER (SSOT)                             */
-/* -------------------------------------------------------------------------- */
+const { getProductBySlug, getSimilarProducts, formatPrice, getStockStatus } = cnsData;
 
-const {
-  getProductBySlug,
-  getSimilarProducts,
-  formatPrice,
-  getStockStatus,
-} = cnsData;
-
-/* -------------------------------------------------------------------------- */
-/*                                   TYPES                                    */
-/* -------------------------------------------------------------------------- */
-
-type TabKey = "features" | "description" | "usage";
-
-/* -------------------------------------------------------------------------- */
-/*                                   PAGE                                     */
-/* -------------------------------------------------------------------------- */
+type Tab = "features" | "description" | "usage";
 
 export default function CnsDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
+  const product = useMemo(() => getProductBySlug(slug), [slug]);
 
-  /* ------------------------------------------------------------------------ */
-  /*                                  MODEL                                   */
-  /* ------------------------------------------------------------------------ */
-
-  const product: cnsProduct | undefined = useMemo(
-    () => getProductBySlug(slug),
-    [slug]
-  );
-
-  /* ------------------------------------------------------------------------ */
-  /*                                 UI STATE                                 */
-  /* ------------------------------------------------------------------------ */
-
-  const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<TabKey>("features");
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
+  const [qty, setQty] = useState(1);
+  const [tab, setTab] = useState<Tab>("features");
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const inStock = product?.stock === "In Stock";
-
-  /* ------------------------------------------------------------------------ */
-  /*                              ROUTE GUARD                                 */
-  /* ------------------------------------------------------------------------ */
+  const similar = useMemo(() => product ? getSimilarProducts(product.id, 4) : [], [product]);
 
   useEffect(() => {
     if (!product) router.replace("/404");
   }, [product, router]);
 
-  /* ------------------------------------------------------------------------ */
-  /*                          RESET ON SLUG CHANGE                             */
-  /* ------------------------------------------------------------------------ */
-
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    setQuantity(1);
-    setActiveTab("features");
-    setImageLoaded(false);
+    setQty(1);
+    setTab("features");
+    setImgLoaded(false);
   }, [slug]);
 
-  /* ------------------------------------------------------------------------ */
-  /*                             SIMILAR PRODUCTS                              */
-  /* ------------------------------------------------------------------------ */
+  const updateQty = useCallback((val: number) => setQty(Math.max(1, Math.min(99, val))), []);
 
-  const similarProducts = useMemo(() => {
-    if (!product) return [];
-    return getSimilarProducts(product.id, 4);
-  }, [product]);
-
-  /* ------------------------------------------------------------------------ */
-  /*                              EVENT HANDLERS                               */
-  /* ------------------------------------------------------------------------ */
-
-  const updateQuantity = useCallback((value: number) => {
-    setQuantity(Math.max(1, Math.min(99, value)));
-  }, []);
-
-  const handleAddToCart = useCallback(() => {
-    if (!product || !inStock || isAdding) return;
-
-    setIsAdding(true);
+  const handleAdd = useCallback(() => {
+    if (!product || !inStock || adding) return;
+    setAdding(true);
     setTimeout(() => {
-      console.log(`Added ${quantity} × ${product.name}`);
-      setIsAdding(false);
+      console.log(`Added ${qty} × ${product.name}`);
+      setAdding(false);
     }, 600);
-  }, [product, quantity, inStock, isAdding]);
-
-  /* ------------------------------------------------------------------------ */
-  /*                               SKELETON                                    */
-  /* ------------------------------------------------------------------------ */
+  }, [product, qty, inStock, adding]);
 
   if (!product) {
     return (
-      <section className={styles.container}>
-        <div className={styles.skeleton}>
-          <div className={styles.skeletonImage} />
-          <div className={styles.skeletonContent}>
-            <div className={styles.skeletonTitle} />
-            <div className={styles.skeletonText} />
-            <div className={styles.skeletonButton} />
+      <section className={s.container}>
+        <div className={s.skeleton}>
+          <div className={s.skeletonImg} />
+          <div className={s.skeletonContent}>
+            <div className={s.skeletonTitle} />
+            <div className={s.skeletonText} />
+            <div className={s.skeletonBtn} />
           </div>
         </div>
       </section>
     );
   }
 
-  /* ------------------------------------------------------------------------ */
-  /*                               TAB CONTENT                                 */
-  /* ------------------------------------------------------------------------ */
-
-  const tabContent: Record<TabKey, React.ReactNode> = {
-
+  const tabs: Record<Tab, JSX.Element> = {
     features: (
-      <ul className={styles.featuresList}>
-        {(product.features ?? [
-          "Clinically validated use",
-          "Guideline-aligned therapy",
-          "Standard pharmaceutical manufacturing",
-        ]).map((feature, index) => (
-          <li key={index}>{feature}</li>
+      <ul className={s.features}>
+        {(product.features ?? ["Clinically validated use", "Guideline-aligned therapy", "Standard pharmaceutical manufacturing"]).map((f, i) => (
+          <li key={i}>{f}</li>
         ))}
       </ul>
     ),
-
-    description: (
-      <div className={styles.description}>
-        <p>{product.fullDescription ?? product.description}</p>
-      </div>
-    ),
-
+    description: <div className={s.desc}><p>{product.fullDescription ?? product.description}</p></div>,
     usage: (
-      <div className={styles.usage}>
-        <p>
-          <strong>Indications:</strong>
-        </p>
-        <ul>
-          {product.indications.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-
-        <p className={styles.warning}>
-          ⚠️ Use strictly as prescribed by a qualified healthcare professional.
-        </p>
+      <div className={s.usage}>
+        <p><strong>Indications:</strong></p>
+        <ul>{product.indications.map((ind, i) => <li key={i}>{ind}</li>)}</ul>
+        <p className={s.warning}>⚠️ Use strictly as prescribed by a qualified healthcare professional.</p>
       </div>
     ),
   };
 
-  /* ------------------------------------------------------------------------ */
-  /*                                   VIEW                                    */
-  /* ------------------------------------------------------------------------ */
-
   return (
-    <section className={styles.container}>
-      {/* Breadcrumb */}
-      <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+    <section className={s.container}>
+      <nav className={s.breadcrumb}>
         <Link href="/">Home</Link>
         <span>/</span>
         <Link href="/system/cns">CNS System</Link>
@@ -177,91 +91,62 @@ export default function CnsDetailsPage() {
         <span>{product.name}</span>
       </nav>
 
-      {/* Details */}
-      <article className={styles.detailsSection}>
-        {/* Image */}
-        <div className={styles.imageWrapper}>
-          {!imageLoaded && <div className={styles.imagePlaceholder} />}
+      <article className={s.details}>
+        <div className={s.imgWrap}>
+          {!imgLoaded && <div className={s.imgPlaceholder} />}
           <Image
             src={product.image}
             alt={product.name}
             width={500}
             height={500}
             priority
-            onLoad={() => setImageLoaded(true)}
-            className={styles.productImage}
+            onLoad={() => setImgLoaded(true)}
+            className={`${s.img} ${imgLoaded ? s.imgLoaded : ""}`}
           />
-          {!inStock && (
-            <div className={styles.outOfStockBadge}>Out of Stock</div>
-          )}
+          {!inStock && <div className={s.outBadge}>Out of Stock</div>}
         </div>
 
-        {/* Info */}
-        <div className={styles.infoWrapper}>
-          <span className={styles.category}>{product.category}</span>
-          <h1 className={styles.title}>{product.name}</h1>
+        <div className={s.info}>
+          <span className={s.category}>{product.category}</span>
+          <h1 className={s.title}>{product.name}</h1>
 
-          <div className={styles.priceSection}>
-            <span className={styles.price}>
-              {formatPrice(product.price)}
-            </span>
-            <span className={styles.stockBadge}>
+          <div className={s.priceRow}>
+            <span className={s.price}>{formatPrice(product.price)}</span>
+            <span className={`${s.stock} ${inStock ? s.stockIn : s.stockOut}`}>
               {getStockStatus(product)}
             </span>
           </div>
 
-          {/* Tabs */}
-          <div className={styles.tabsContainer}>
-            <div className={styles.tabButtons}>
-              {(Object.keys(tabContent) as TabKey[]).map((key) => (
-                <button
-                  key={key}
-                  className={activeTab === key ? styles.activeTab : ""}
-                  onClick={() => setActiveTab(key)}
-                >
-                  {key.toUpperCase()}
+          <div className={s.tabs}>
+            <div className={s.tabBtns}>
+              {(Object.keys(tabs) as Tab[]).map(k => (
+                <button key={k} className={tab === k ? s.tabActive : ""} onClick={() => setTab(k)}>
+                  {k.toUpperCase()}
                 </button>
               ))}
             </div>
-            <div className={styles.tabContent}>
-              {tabContent[activeTab]}
-            </div>
+            <div className={s.tabContent}>{tabs[tab]}</div>
           </div>
 
-          {/* Actions */}
-          <div className={styles.actionsSection}>
-            <div className={styles.quantityControl}>
-              <button onClick={() => updateQuantity(quantity - 1)} disabled={!inStock}>
-                −
-              </button>
-              <input value={quantity} readOnly />
-              <button onClick={() => updateQuantity(quantity + 1)} disabled={!inStock}>
-                +
-              </button>
+          <div className={s.actions}>
+            <div className={s.qtyWrap}>
+              <button onClick={() => updateQty(qty - 1)} disabled={!inStock}>−</button>
+              <input value={qty} readOnly />
+              <button onClick={() => updateQty(qty + 1)} disabled={!inStock}>+</button>
             </div>
-
-            <button
-              className={styles.addToCartBtn}
-              disabled={!inStock || isAdding}
-              onClick={handleAddToCart}
-            >
-              {isAdding ? "Adding…" : inStock ? "Add to Cart" : "Out of Stock"}
+            <button className={s.cartBtn} disabled={!inStock || adding} onClick={handleAdd}>
+              {adding ? "Adding…" : inStock ? "Add to Cart" : "Out of Stock"}
             </button>
           </div>
         </div>
       </article>
 
-      {/* Similar */}
-      {similarProducts.length > 0 && (
-        <section className={styles.similarSection}>
+      {similar.length > 0 && (
+        <section className={s.similar}>
           <h2>You May Also Like</h2>
-          <div className={styles.similarGrid}>
-            {similarProducts.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/dropups/cns/${item.slug}`}
-                className={styles.similarCard}
-              >
+          <div className={s.grid}>
+            {similar.map(item => (
+              <Link key={item.slug} href={`/dropups/cns/${item.slug}`} className={s.card}>
                 <Image src={item.image} alt={item.name} width={220} height={220} />
                 <h3>{item.name}</h3>
                 <p>{formatPrice(item.price)}</p>
