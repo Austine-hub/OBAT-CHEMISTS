@@ -1,3 +1,4 @@
+//src/app/dropups/sexual/[slug]/page.tsx
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";

@@ -1,87 +1,57 @@
-// src/components/MSK.tsx
+//src/app/system/msk/page.tsx
 
 "use client";
 
-import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { memo } from "react";
 
-import { useCart } from "@/context/CartContext";
-import { mskProducts, type Product } from "@/data/mskData";
+import { useMskProducts } from "@/viewmodels/msk/useMskProducts";
+import styles from "./MSK.module.css";
 
-import styles from "../Shop.module.css";
-
-const MSK: React.FC = memo(() => {
-  const { addToCart } = useCart();
-
-  const handleAddToCart = (product: Product) => {
-    addToCart({
-      id: String(product.id), // Convert number → string
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-      inStock: product.stock === "In Stock",
-    });
-
-    toast.success(`${product.name} added to cart`);
-  };
+const MSKPage = memo(function MSKPage() {
+  const { products, formatPrice, normalizeSlug } = useMskProducts();
 
   return (
-    <section className={styles.shopSection}>
-      <div className={styles.header}>
-        <h2>Shop</h2>
-
-        <div className={styles.subCategory}>
-          <label>Subcategory:</label>
-          <span>Joint Supplements</span>
-        </div>
-      </div>
+    <section className={styles.section}>
+      <header className={styles.header}>
+        <h1>Joint Supplements</h1>
+        <p className={styles.sub}>
+          Support mobility, flexibility, and joint health
+        </p>
+      </header>
 
       <div className={styles.grid}>
-        {mskProducts.map((product) => (
-          <div key={product.id} className={styles.card}>
-            <div className={styles.imageWrapper}>
+        {products.map((p) => (
+          <Link
+            key={p.id}
+            href={`/dropups/msk/${normalizeSlug(p.slug)}`}
+            className={styles.card}
+            aria-label={`View details for ${p.name}`}
+          >
+            <div className={styles.imageWrap}>
               <Image
-                src={product.image}
-                alt={product.name}
-                width={300}
-                height={300}
-                className={styles.image}
+                src={p.image}
+                alt={p.name}
+                width={220}
+                height={220}
+                loading="lazy"
               />
-              <span className={styles.stockBadge}>{product.stock}</span>
+
+              {!p.inStock && (
+                <span className={styles.outBadge}>Out of Stock</span>
+              )}
             </div>
 
-            <div className={styles.details}>
-              <p className={styles.category}>{product.category}</p>
-              <h3 className={styles.name}>{product.name}</h3>
-
-              <p className={styles.price}>
-                kes {product.price.toLocaleString()}
-              </p>
+            <div className={styles.info}>
+              <p className={styles.name}>{p.name}</p>
+              <p className={styles.price}>{formatPrice(p.price)}</p>
             </div>
-
-            <div className={styles.actions}>
-              <button
-                className={styles.addToCart}
-                onClick={() => handleAddToCart(product)}
-              >
-                🛒 Add to Cart
-              </button>
-
-              <Link
-                href={`/product/${product.id}`}
-                className={styles.moreInfo}
-              >
-                More Info
-              </Link>
-            </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
   );
 });
 
-export default MSK;
+export default MSKPage;

@@ -63,7 +63,7 @@ export default function CnsDetailsPage() {
     );
   }
 
-  const tabs: Record<Tab, JSX.Element> = {
+   const tabs: Record<Tab, React.ReactNode> = {
     features: (
       <ul className={s.features}>
         {(product.features ?? ["Clinically validated use", "Guideline-aligned therapy", "Standard pharmaceutical manufacturing"]).map((f, i) => (
