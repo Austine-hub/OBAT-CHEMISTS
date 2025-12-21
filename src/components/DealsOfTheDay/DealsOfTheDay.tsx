@@ -1,32 +1,64 @@
+//src/components/DealsOfTheDay/DealsOfTheDay.tsx
+
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+
 import styles from "./DealsOfTheDay.module.css";
-
 import { deals, getAllDealsInKSH } from "@/data/details/deals";
+import { useCart } from "@/context/CartContext";
 
-export default function DealsOfTheDay() {
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes in seconds
-  const [dealsInKSH, setDealsInKSH] = useState(getAllDealsInKSH());
+const COUNTDOWN_SECONDS = 15 * 60;
 
-  // Countdown timer (accessible & robust)
+const DealsOfTheDay = memo(function DealsOfTheDay() {
+  const { addToCart } = useCart();
+
+  const [timeLeft, setTimeLeft] = useState(COUNTDOWN_SECONDS);
+  const [dealsInKSH] = useState(() => getAllDealsInKSH());
+
+  /* -------------------------------------------------------------------------- */
+  /* Countdown Timer                                                            */
+  /* -------------------------------------------------------------------------- */
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeLeft((prev) => Math.max(prev - 1, 0));
+      setTimeLeft((t) => Math.max(t - 1, 0));
     }, 1000);
+
     return () => clearInterval(interval);
   }, []);
 
   const mins = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const secs = String(timeLeft % 60).padStart(2, "0");
 
+  /* -------------------------------------------------------------------------- */
+  /* Add To Cart                                                                */
+  /* -------------------------------------------------------------------------- */
+  const handleAddToCart = useCallback(
+    (deal: (typeof dealsInKSH)[number]) => {
+      addToCart({
+        id: deal.id,
+        name: deal.name,
+        price: deal.price,
+        quantity: 1,
+        image: deal.img,
+        originalPrice: deal.mrp,
+        discount: deal.discount,
+        category: "Deals",
+      });
+
+      toast.success(`${deal.name} added to cart`);
+    },
+    [addToCart]
+  );
+
   return (
     <section className={styles.deals} aria-labelledby="deals-heading">
       {/* HEADER */}
-      <div className={styles.header}>
+      <header className={styles.header}>
         <h2 id="deals-heading" className={styles.title}>
           Deals of the Day
         </h2>
@@ -45,16 +77,12 @@ export default function DealsOfTheDay() {
           </span>
         </div>
 
-        <Link
-          href="/deals"
-          className={styles.viewAll}
-          aria-label="View all deals"
-        >
+        <Link href="/deals" className={styles.viewAll}>
           View All
         </Link>
-      </div>
+      </header>
 
-      {/* DEALS CAROUSEL */}
+      {/* DEALS LIST */}
       <div className={styles.carousel}>
         <div className={styles.track}>
           {dealsInKSH.map((deal) => (
@@ -64,10 +92,12 @@ export default function DealsOfTheDay() {
               whileHover={{ scale: 1.045 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 220, damping: 15 }}
-              aria-label={deal.name}
             >
-              <Link href={`/deals/${deal.id}`} className={styles.cardLink}>
-                {/* IMAGE */}
+              <Link
+                href={`/deals/${deal.id}`}
+                className={styles.cardLink}
+                aria-label={deal.name}
+              >
                 <div className={styles.imgWrap}>
                   <Image
                     src={deal.img}
@@ -79,15 +109,12 @@ export default function DealsOfTheDay() {
                   />
                 </div>
 
-                {/* PRODUCT NAME */}
                 <h3 className={styles.name}>{deal.name}</h3>
 
-                {/* MRP */}
                 <p className={styles.mrp}>
                   MRP: <span className={styles.strike}>{deal.mrpFormatted}</span>
                 </p>
 
-                {/* PRICE ROW */}
                 <div className={styles.priceRow}>
                   <span className={styles.price}>{deal.priceFormatted}</span>
                   {deal.discount > 0 && (
@@ -97,10 +124,26 @@ export default function DealsOfTheDay() {
                   )}
                 </div>
               </Link>
+
+              {/* ADD TO CART */}
+              <button
+                type="button"
+                className={styles.addBtn}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAddToCart(deal);
+                }}
+                aria-label={`Add ${deal.name} to cart`}
+              >
+                Add to Cart
+              </button>
             </motion.article>
           ))}
         </div>
       </div>
     </section>
   );
-}
+});
+
+export default DealsOfTheDay;

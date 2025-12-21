@@ -1,124 +1,163 @@
+//src/components/products/ProductsGrid.tsx
+
 "use client";
 
-import React, { useCallback } from "react";
+import { memo, useCallback } from "react";
 import Image from "next/image";
-import { Heart, ShoppingCart, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Heart, ShoppingCart, Eye, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
-// MVC → import data (Model layer)
-import { products, type Product } from "@/data/details/ProductGrid"; 
-
+import { useCart } from "@/context/CartContext";
+import { products, type Product } from "@/data/details/ProductGrid";
 import styles from "./ProductGrid.module.css";
 
-// Controller abstraction (separation of intent)
-const useProductGridController = () => {
-  const router = useRouter();
+/* -------------------------------------------------------------------------- */
+/* Product Card                                                               */
+/* -------------------------------------------------------------------------- */
 
-  const goToDetails = useCallback((id: number) => {
-    router.push(`/products/${id}`);
-  }, [router]);
+interface ProductCardProps {
+  product: Product;
+  onAddToCart: (product: Product) => void;
+}
 
-  const stopEvent = useCallback(
-    (e: React.MouseEvent) => e.stopPropagation(),
-    []
+const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
+  const handleAdd = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onAddToCart(product);
+    },
+    [onAddToCart, product]
   );
 
-  return { goToDetails, stopEvent };
-};
-
-export default function ProductGrid() {
-  const { goToDetails, stopEvent } = useProductGridController();
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
-    <section className={styles.section} aria-labelledby="pink-rush-title">
-      {/* HEADER */}
-      <div className={styles.header}>
-        <h2 id="pink-rush-title" className={styles.title}>
-          The Pink Rush
-        </h2>
+    <motion.article
+      className={styles.card}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+    >
+      {product.discount && (
+        <span className={styles.badge}>{product.discount}% OFF</span>
+      )}
+
+      {/* Quick actions */}
+      <div className={styles.actions}>
+        <button className={styles.iconBtn} onClick={stop} aria-label="Wishlist">
+          <Heart size={16} />
+        </button>
+
+        <Link
+          href={`/products/${product.id}`}
+          className={styles.iconBtn}
+          aria-label="View product"
+          onClick={stop}
+        >
+          <Eye size={16} />
+        </Link>
 
         <button
-          className={styles.viewAll}
-          aria-label="View all products"
+          className={styles.iconBtn}
+          onClick={handleAdd}
+          aria-label="Quick add to cart"
         >
-          View All <ArrowRight size={18} strokeWidth={2} />
+          <ShoppingCart size={16} />
         </button>
       </div>
 
-      {/* GRID */}
-      <div className={styles.grid}>
-        {products.map((product: Product) => (
-          <motion.article
-            key={product.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => goToDetails(product.id)}
-            className={styles.card}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 300 }}
+      {/* Image */}
+      <div className={styles.imageWrapper}>
+        <Image
+          src={product.image}
+          alt={product.name}
+          fill
+          className={styles.image}
+          sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, 25vw"
+        />
+      </div>
+
+      {/* Content */}
+      <div className={styles.content}>
+        <h3 className={styles.name}>{product.name}</h3>
+
+        <div className={styles.pricing}>
+          {product.originalPrice && (
+            <span className={styles.oldPrice}>
+              KES {product.originalPrice.toLocaleString()}
+            </span>
+          )}
+          <span className={styles.price}>
+            KES {product.currentPrice.toLocaleString()}
+          </span>
+        </div>
+
+        <div className={styles.ctaRow}>
+          <Link
+            href={`/products/${product.id}`}
+            className={styles.viewBtn}
+            onClick={stop}
           >
-            {/* DISCOUNT BADGE */}
-            {!!product.discount && (
-              <div className={styles.badge}>
-                {product.discount}% Off
-              </div>
-            )}
+            View
+          </Link>
 
-            {/* ACTION ICONS */}
-            <div className={styles.actions}>
-              <button
-                className={styles.iconBtn}
-                aria-label="Add to wishlist"
-                onClick={stopEvent}
-              >
-                <Heart size={18} strokeWidth={2} />
-              </button>
+          <button className={styles.addToCart} onClick={handleAdd}>
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </motion.article>
+  );
+});
 
-              <button
-                className={styles.iconBtn}
-                aria-label="Add to cart"
-                onClick={stopEvent}
-              >
-                <ShoppingCart size={18} strokeWidth={2} />
-              </button>
-            </div>
+ProductCard.displayName = "ProductCard";
 
-            {/* IMAGE */}
-            <div className={styles.imageWrapper}>
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                className={styles.image}
-                sizes="100vw"
-                priority={false}
-              />
-            </div>
+/* -------------------------------------------------------------------------- */
+/* Grid                                                                       */
+/* -------------------------------------------------------------------------- */
 
-            {/* CONTENT */}
-            <div className={styles.content}>
-              <h3 className={styles.name}>{product.name}</h3>
+export default function ProductGrid() {
+  const { addToCart } = useCart();
 
-              <div className={styles.pricing}>
-                <span className={styles.oldPrice}>
-                  KES {product.originalPrice.toLocaleString()}
-                </span>
+  const handleAddToCart = useCallback(
+    (product: Product) => {
+      addToCart({
+        id: String(product.id),
+        name: product.name,
+        price: product.currentPrice,
+        quantity: 1,
+        image: product.image,
+        originalPrice: product.originalPrice,
+        badge: product.discount ? `${product.discount}% OFF` : undefined,
+      });
 
-                <span className={styles.price}>
-                  KES {product.currentPrice.toLocaleString()}
-                </span>
-              </div>
+      toast.success(`${product.name} added to cart`, {
+        icon: "🛒",
+      });
+    },
+    [addToCart]
+  );
 
-              <button
-                className={styles.addToCart}
-                onClick={stopEvent}
-              >
-                + Add To Cart
-              </button>
-            </div>
-          </motion.article>
+  return (
+    <section className={styles.section} aria-labelledby="products-title">
+      <header className={styles.header}>
+        <h2 id="products-title" className={styles.title}>
+          The Pink Rush
+        </h2>
+
+        <Link href="/products" className={styles.viewAll}>
+          View All <ArrowRight size={18} />
+        </Link>
+      </header>
+
+      <div className={styles.grid}>
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onAddToCart={handleAddToCart}
+          />
         ))}
       </div>
     </section>

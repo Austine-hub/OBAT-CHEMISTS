@@ -1,15 +1,21 @@
+//src/components/products/ProductGrid2.tsx
 "use client";
 
 import React, { useMemo, KeyboardEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Eye } from "lucide-react";
+import { Heart, Eye, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import styles from "./ProductGrid2.module.css";
+import toast from "react-hot-toast";
 
-// ===== MVC - MODEL (centralized data) =====
+import styles from "./ProductGrid2.module.css";
+import { useCart } from "@/context/CartContext";
 import { productsArray, formatPrice } from "@/data/details/products";
+
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
 
 interface Product {
   id: number;
@@ -20,11 +26,16 @@ interface Product {
   category?: string;
 }
 
-// ===== CONTROLLER HELPERS =====
-const navigateToProduct = (router: ReturnType<typeof useRouter>, id: number) =>
-  router.push(`/products2/${id}`);
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 
-const handleCardKey =
+const navigateToProduct = (
+  router: ReturnType<typeof useRouter>,
+  id: number
+) => router.push(`/products2/${id}`);
+
+const handleKeyboardNav =
   (router: ReturnType<typeof useRouter>, id: number) =>
   (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -33,45 +44,61 @@ const handleCardKey =
     }
   };
 
-const addToCart = (product: Product) => {
-  console.log("Add to cart:", product.id);
-};
+/* -------------------------------------------------------------------------- */
+/* Component                                                                  */
+/* -------------------------------------------------------------------------- */
 
-const addToWishlist = (product: Product) => {
-  console.log("Add to wishlist:", product.id);
-};
-
-// ===== VIEW =====
 export default function ProductGrid2() {
   const router = useRouter();
+  const { addToCart } = useCart();
 
   const products = useMemo(() => productsArray as Product[], []);
 
-  if (!products?.length) {
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: String(product.id),
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image,
+      inStock: true,
+    });
+
+    toast.success(`${product.name} added to cart`, {
+      icon: "🛒",
+      duration: 2500,
+    });
+  };
+
+  if (!products.length) {
     return (
       <section className={styles.empty} aria-live="polite">
         <h2 className={styles.emptyTitle}>No products available</h2>
-        <p className={styles.emptyDesc}>Check back soon for new arrivals.</p>
+        <p className={styles.emptyDesc}>
+          Please check back later for new arrivals.
+        </p>
       </section>
     );
   }
 
   return (
     <section className={styles.container} aria-labelledby="new-at-obat">
-      {/* HEADER */}
-      <div className={styles.header}>
+      {/* Header */}
+      <header className={styles.header}>
         <h2 id="new-at-obat" className={styles.title}>
           New at OBAT
         </h2>
-        <Link href="/products" className={styles.viewAll} aria-label="View all products">
+
+        <Link href="/products" className={styles.viewAll}>
           View all
         </Link>
-      </div>
+      </header>
 
-      {/* PRODUCT GRID */}
-      <div className={styles.grid} role="list" aria-label="New products">
+      {/* Grid */}
+      <div className={styles.grid} role="list">
         {products.map((product) => {
-          const priceLabel = formatPrice?.(product.price) ?? `KES ${product.price}`;
+          const priceLabel =
+            formatPrice?.(product.price) ?? `KES ${product.price}`;
 
           return (
             <motion.article
@@ -79,40 +106,33 @@ export default function ProductGrid2() {
               className={styles.card}
               role="listitem"
               tabIndex={0}
-              onKeyDown={handleCardKey(router, product.id)}
-              onClick={() => navigateToProduct(router, product.id)}
-              whileHover={{ translateY: -6, boxShadow: "0 8px 16px rgba(0,0,0,0.08)" }}
-              whileTap={{ scale: 0.985 }}
               layout
-              aria-labelledby={`product-title-${product.id}`}
+              whileHover={{ y: -6 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigateToProduct(router, product.id)}
+              onKeyDown={handleKeyboardNav(router, product.id)}
             >
-              {/* IMAGE & QUICK ACTIONS */}
+              {/* Image */}
               <div className={styles.media}>
-                <Link
-                  href={`/products2/${product.id}`}
-                  aria-label={`Open details for ${product.name}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={520}
-                    height={520}
-                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px"
-                    loading="lazy"
-                    className={styles.image}
-                  />
-                </Link>
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={520}
+                  height={520}
+                  className={styles.image}
+                  sizes="(max-width: 768px) 45vw, 240px"
+                  priority={false}
+                />
 
-                <div className={styles.overlayControls} aria-hidden="true">
+                {/* Overlay actions */}
+                <div className={styles.overlay}>
                   <button
                     className={styles.iconBtn}
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToWishlist(product);
+                      toast("Wishlist coming soon ❤️");
                     }}
-                    aria-label={`Add ${product.name} to wishlist`}
-                    title="Add to wishlist"
+                    aria-label="Add to wishlist"
                   >
                     <Heart size={16} />
                   </button>
@@ -121,43 +141,53 @@ export default function ProductGrid2() {
                     className={styles.iconBtn}
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/products2/${product.id}?quickView=1`);
+                      router.push(`/products2/${product.id}`);
                     }}
-                    aria-label={`Quick view ${product.name}`}
-                    title="Quick view"
+                    aria-label="View product"
                   >
                     <Eye size={16} />
                   </button>
                 </div>
               </div>
 
-              {/* PRODUCT INFO */}
+              {/* Content */}
               <div className={styles.content}>
-                <h3 id={`product-title-${product.id}`} className={styles.productName}>
+                <h3 className={styles.productName}>
                   <Link
                     href={`/products2/${product.id}`}
                     onClick={(e) => e.stopPropagation()}
                     className={styles.productLink}
                   >
-                    <span className={styles.productNameInner}>{product.name}</span>
+                    {product.name}
                   </Link>
                 </h3>
 
                 <div className={styles.meta}>
-                  <p className={styles.price} aria-label={`Price ${priceLabel}`}>
-                    {priceLabel}
-                  </p>
+                  <span className={styles.price}>{priceLabel}</span>
 
-                  <button
-                    className={styles.addBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(product);
-                    }}
-                    aria-label={`Add ${product.name} to cart`}
-                  >
-                    + Add
-                  </button>
+                  <div className={styles.actions}>
+                    <button
+                      className={styles.viewBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/products2/${product.id}`);
+                      }}
+                    >
+                      View
+                    </button>
+
+                    <button
+                      className={styles.addBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
+                      aria-label={`Add ${product.name} to cart`}
+                    >
+                      <ShoppingCart size={14} />
+                      Add
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.article>

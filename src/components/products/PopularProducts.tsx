@@ -1,95 +1,183 @@
+//src/components/products/PopularProducts.tsx
+
 "use client";
 
 import React, { memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Heart, Eye } from "lucide-react";
+import { Heart, Eye, ShoppingCart } from "lucide-react";
+import toast from "react-hot-toast";
+
 import styles from "./PopularProducts.module.css";
-
-// MVC: Model imported from central data source
 import { products } from "@/data/details/popular";
+import { useCart } from "@/context/CartContext";
 
-interface ProductCardProps {
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
+interface Product {
   id: number;
   name: string;
   price: number;
   oldPrice?: number;
   image: string;
   badge?: string;
-  onOpen: (id: number) => void;
 }
 
-/** Product Card (View Component) */
+interface ProductCardProps extends Product {
+  onView: (id: number) => void;
+  onAddToCart: (product: Product) => void;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Product Card                                                               */
+/* -------------------------------------------------------------------------- */
+
 const ProductCard: React.FC<ProductCardProps> = memo(
-  ({ id, name, price, oldPrice, image, badge, onOpen }) => {
+  ({ id, name, price, oldPrice, image, badge, onView, onAddToCart }) => {
     const stop = (e: React.MouseEvent) => e.stopPropagation();
 
     return (
-      <article className={styles.card} onClick={() => onOpen(id)}>
+      <article
+        className={styles.card}
+        role="button"
+        tabIndex={0}
+        onClick={() => onView(id)}
+        onKeyDown={(e) => e.key === "Enter" && onView(id)}
+      >
         {badge && <span className={styles.badge}>{badge}</span>}
 
+        {/* Floating actions */}
         <div className={styles.actions}>
-          <button aria-label="Add to wishlist" className={styles.iconBtn} onClick={stop}>
-            <Heart size={18} strokeWidth={2} />
+          <button
+            aria-label="Add to wishlist"
+            className={styles.iconBtn}
+            onClick={stop}
+          >
+            <Heart size={16} />
           </button>
 
-          <button aria-label="Quick view" className={styles.iconBtn} onClick={stop}>
-            <Eye size={18} strokeWidth={2} />
+          <button
+            aria-label="View product details"
+            className={styles.iconBtn}
+            onClick={(e) => {
+              stop(e);
+              onView(id);
+            }}
+          >
+            <Eye size={16} />
           </button>
         </div>
 
+        {/* Image */}
         <div className={styles.imageWrapper}>
           <Image
             src={image}
             alt={name}
-            width={300}
-            height={300}
+            width={240}
+            height={240}
             loading="lazy"
             className={styles.image}
           />
         </div>
 
+        {/* Info */}
         <div className={styles.info}>
-          <h3>{name}</h3>
+          <h3 className={styles.title}>{name}</h3>
 
           <div className={styles.priceRow}>
             <span className={styles.current}>KES {price.toFixed(2)}</span>
-            {oldPrice && <span className={styles.old}>KES {oldPrice.toFixed(2)}</span>}
+            {oldPrice && (
+              <span className={styles.old}>KES {oldPrice.toFixed(2)}</span>
+            )}
           </div>
 
-          <button className={styles.addBtn} onClick={stop}>
-            + Add To Cart
-          </button>
+          <div className={styles.ctaRow}>
+            <button
+              className={styles.viewBtn}
+              onClick={(e) => {
+                stop(e);
+                onView(id);
+              }}
+            >
+              View
+            </button>
+
+            <button
+              className={styles.addBtn}
+              onClick={(e) => {
+                stop(e);
+                onAddToCart({ id, name, price, oldPrice, image, badge });
+              }}
+            >
+              <ShoppingCart size={16} />
+              <span>Add</span>
+            </button>
+          </div>
         </div>
       </article>
     );
   }
 );
+
 ProductCard.displayName = "ProductCard";
 
-/** Controller + Page View */
+/* -------------------------------------------------------------------------- */
+/* Popular Products Section                                                   */
+/* -------------------------------------------------------------------------- */
+
 const PopularProducts: React.FC = () => {
   const router = useRouter();
+  const { addToCart } = useCart();
 
-  const openProduct = useCallback(
+  const handleView = useCallback(
     (id: number) => {
       router.push(`/popular-products/${id}`);
     },
     [router]
   );
 
+  const handleAddToCart = useCallback(
+    (product: Product) => {
+      addToCart({
+        id: String(product.id),
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.image,
+        originalPrice: product.oldPrice,
+        badge: product.badge,
+      });
+
+      toast.success(`${product.name} added to cart`, {
+        duration: 2500,
+        icon: "🛒",
+      });
+    },
+    [addToCart]
+  );
+
   return (
     <section className={styles.container}>
       <header className={styles.header}>
         <h2>Popular Products</h2>
-        <a href="/view-all" className={styles.viewAll}>
+        <button
+          className={styles.viewAll}
+          onClick={() => router.push("/popular-products")}
+        >
           View All
-        </a>
+        </button>
       </header>
 
       <div className={styles.grid}>
-        {products.map((p) => (
-          <ProductCard key={p.id} {...p} onOpen={openProduct} />
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            {...product}
+            onView={handleView}
+            onAddToCart={handleAddToCart}
+          />
         ))}
       </div>
     </section>
