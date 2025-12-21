@@ -1,3 +1,17 @@
+/* src/app/category/hygiene/Hygiene.module.css */
+
+/* -------------------------------------------------------------------------- */
+/* ROOT WRAPPER (used to scope global-safe selectors)                           */
+/* -------------------------------------------------------------------------- */
+
+.hygieneRoot {
+  width: 100%;
+}
+
+/* -------------------------------------------------------------------------- */
+/* SECTION LAYOUT                                                              */
+/* -------------------------------------------------------------------------- */
+
 .offersSection {
   width: 100%;
   padding: 3rem 0;
@@ -23,6 +37,10 @@
   color: #1a1a1a;
   margin: 0;
 }
+
+/* -------------------------------------------------------------------------- */
+/* NAVIGATION                                                                  */
+/* -------------------------------------------------------------------------- */
 
 .navButtons {
   display: flex;
@@ -55,6 +73,10 @@
   cursor: not-allowed;
 }
 
+/* -------------------------------------------------------------------------- */
+/* PRODUCTS GRID                                                               */
+/* -------------------------------------------------------------------------- */
+
 .productsWrapper {
   overflow-x: auto;
   overflow-y: hidden;
@@ -75,6 +97,10 @@
   gap: 1.25rem;
   padding-bottom: 1rem;
 }
+
+/* -------------------------------------------------------------------------- */
+/* PRODUCT CARD                                                                */
+/* -------------------------------------------------------------------------- */
 
 .productCard {
   background-color: #fff;
@@ -110,36 +136,9 @@
   box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
-.actions {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  z-index: 2;
-}
-
-.actionBtn {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: none;
-  background-color: rgba(255, 255, 255, 0.95);
-  color: #4caf50;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.actionBtn:hover {
-  background-color: #4caf50;
-  color: #fff;
-  transform: scale(1.1);
-}
+/* -------------------------------------------------------------------------- */
+/* IMAGE                                                                       */
+/* -------------------------------------------------------------------------- */
 
 .imageWrapper {
   width: 100%;
@@ -149,6 +148,18 @@
   justify-content: center;
   margin-bottom: 1rem;
   padding: 1rem;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.imageWrapper:hover {
+  opacity: 0.85;
+}
+
+.imageWrapper:focus {
+  outline: 2px solid #4caf50;
+  outline-offset: 2px;
+  border-radius: 8px;
 }
 
 .productImage {
@@ -156,6 +167,10 @@
   max-height: 100%;
   object-fit: contain;
 }
+
+/* -------------------------------------------------------------------------- */
+/* PRODUCT INFO                                                                */
+/* -------------------------------------------------------------------------- */
 
 .productInfo {
   flex: 1;
@@ -193,8 +208,12 @@
   font-size: 1.125rem;
   font-weight: 700;
   color: #1a1a1a;
-  margin: 0.5rem 0 0 0;
+  margin: 0.5rem 0 0;
 }
+
+/* -------------------------------------------------------------------------- */
+/* FOOTER ACTIONS                                                              */
+/* -------------------------------------------------------------------------- */
 
 .cardFooter {
   display: flex;
@@ -226,6 +245,10 @@
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
+.addBtn:active {
+  transform: translateY(0);
+}
+
 .detailsBtn {
   background-color: transparent;
   color: #666;
@@ -245,6 +268,10 @@
   border-color: #ccc;
 }
 
+/* -------------------------------------------------------------------------- */
+/* VIEW ALL                                                                    */
+/* -------------------------------------------------------------------------- */
+
 .viewAll {
   display: inline-flex;
   align-items: center;
@@ -252,8 +279,11 @@
   color: #4caf50;
   font-size: 1rem;
   font-weight: 600;
-  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
   margin-top: 2rem;
+  padding: 0;
   transition: all 0.3s ease;
 }
 
@@ -261,6 +291,10 @@
   gap: 0.75rem;
   color: #45a049;
 }
+
+/* -------------------------------------------------------------------------- */
+/* RESPONSIVE                                                                  */
+/* -------------------------------------------------------------------------- */
 
 @media (max-width: 1200px) {
   .productsGrid {
@@ -327,67 +361,16 @@
     font-size: 0.7rem;
     padding: 0.3rem 0.6rem;
   }
-
-  .actions {
-    gap: 0.375rem;
-  }
-
-  .actionBtn {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-
-  .actionBtn svg {
-    width: 16px;
-    height: 16px;
-  }
 }
 
+/* -------------------------------------------------------------------------- */
+/* ACCESSIBILITY — REDUCED MOTION (SCOPED, VALID)                              */
+/* -------------------------------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
-  :global(*) {
+  .hygieneRoot * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-
-.cardFooter {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: space-between;
-  margin-top: 0.5rem;
-}
-
-.addBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: var(--color-primary, #0077b6);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.addBtn:hover {
-  background: #0096c7;
-}
-
-.detailsBtn {
-  background: transparent;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 0.5rem 0.9rem;
-  cursor: pointer;
-  color: #333;
-  transition: all 0.3s ease;
-}
-
-.detailsBtn:hover {
-  border-color: #0077b6;
-  color: #0077b6;
 }

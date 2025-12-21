@@ -1,33 +1,39 @@
+//src/context/CartContext.tsx
+
 "use client";
-import type { StaticImageData } from "next/image";
 
 import {
   createContext,
   useContext,
   useReducer,
   useEffect,
-  useState,
   useCallback,
   useMemo,
   useRef,
   type ReactNode,
 } from "react";
+import type { StaticImageData } from "next/image";
 
+/* ========================================================================== */
+/* Types                                                                      */
+/* ========================================================================== */
 
-/**
- * Type definitions
- */
 export interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
-  image: string | StaticImageData;   // ✅ Accept both
+  image: string | StaticImageData;
+
+  /* Optional commerce metadata */
+  originalPrice?: number;
+  stock?: number;        // numeric stock limit
+  inStock?: boolean;     // availability flag
+  seller?: string;
+  badge?: string;
   category?: string;
   description?: string;
   variation?: string;
-  inStock?: boolean;
-  originalPrice?: number;
   discount?: number;
 }
 
@@ -36,56 +42,79 @@ interface CartState {
   initialized: boolean;
 }
 
-type Action =
+type CartAction =
   | { type: "INIT"; payload: CartItem[] }
   | { type: "ADD"; payload: CartItem }
-  | { type: "REMOVE"; payload: { id: string } }
-  | { type: "CLEAR" }
+  | { type: "REMOVE"; payload: string }
   | { type: "UPDATE_QTY"; payload: { id: string; quantity: number } }
-  | { type: "INCREASE_QTY"; payload: { id: string; delta?: number } }
-  | { type: "DECREASE_QTY"; payload: { id: string; delta?: number } };
+  | { type: "CLEAR" };
 
-/**
- * Public context API
- */
-interface CartContextType {
-  cartItems: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  clearCart: () => void;
-  updateQuantity: (id: string, quantity: number) => void;
-  increaseQty: (id: string, delta?: number) => void;
-  decreaseQty: (id: string, delta?: number) => void;
-  getCartTotal: () => number;
-  getTotalItems: () => number;
-  isCartOpen: boolean;
-  openCart: () => void;
-  closeCart: () => void;
-  toggleCart: () => void;
+export interface CartContextValue {
+  /* State */
+  items: CartItem[];
+  availableItems: CartItem[];
+  unavailableItems: CartItem[];
+
+  /* Totals */
+  subtotal: number;
+  totalItems: number;
   isInitialized: boolean;
+
+  /* Actions (stable public API) */
+  addToCart: (item: CartItem) => void;
+  addItem: (item: CartItem) => void;        // alias (legacy-safe)
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+/* ========================================================================== */
+/* Context                                                                    */
+/* ========================================================================== */
 
-const STORAGE_KEY = "cart_items_v2";
+const CartContext = createContext<CartContextValue | undefined>(undefined);
 
-/**
- * Utility: Sanitize cart item quantities
- */
-const sanitizeQuantity = (quantity: number): number => {
-  return Math.max(1, Math.floor(Math.abs(quantity || 1)));
+const STORAGE_KEY = "obat_cart_v2";
+
+/* ========================================================================== */
+/* Utilities                                                                  */
+/* ========================================================================== */
+
+const clamp = (val: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, val));
+
+const sanitizeItem = (item: CartItem): CartItem => {
+  const safeStock = typeof item.stock === "number" && item.stock > 0
+    ? item.stock
+    : 999;
+
+  return {
+    ...item,
+    price: Math.max(0, item.price),
+    quantity: clamp(Math.floor(item.quantity || 1), 1, safeStock),
+    inStock: item.inStock ?? true,
+    stock: safeStock,
+  };
 };
 
-const sanitizeItem = (item: CartItem): CartItem => ({
-  ...item,
-  quantity: sanitizeQuantity(item.quantity),
-  price: Math.max(0, item.price),
-});
+const validateStoredItems = (data: unknown): CartItem[] => {
+  if (!Array.isArray(data)) return [];
 
-/**
- * Reducer: Pure state transitions
- */
-const reducer = (state: CartState, action: Action): CartState => {
+  return data.filter(
+    (i): i is CartItem =>
+      typeof i === "object" &&
+      i !== null &&
+      typeof i.id === "string" &&
+      typeof i.name === "string" &&
+      typeof i.price === "number"
+  );
+};
+
+/* ========================================================================== */
+/* Reducer                                                                    */
+/* ========================================================================== */
+
+const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case "INIT":
       return {
@@ -95,272 +124,204 @@ const reducer = (state: CartState, action: Action): CartState => {
 
     case "ADD": {
       const item = sanitizeItem(action.payload);
-      const existingIndex = state.items.findIndex((i) => i.id === item.id);
-      
-      if (existingIndex !== -1) {
-        const newItems = [...state.items];
-        newItems[existingIndex] = {
-          ...newItems[existingIndex],
-          quantity: newItems[existingIndex].quantity + item.quantity,
+      const index = state.items.findIndex((i) => i.id === item.id);
+
+      if (index >= 0) {
+        const updated = [...state.items];
+        const existing = updated[index];
+
+        updated[index] = {
+          ...existing,
+          quantity: clamp(
+            existing.quantity + item.quantity,
+            1,
+            existing.stock ?? 999
+          ),
         };
-        return { ...state, items: newItems };
+
+        return { ...state, items: updated };
       }
-      
+
       return { ...state, items: [...state.items, item] };
     }
 
     case "REMOVE":
       return {
         ...state,
-        items: state.items.filter((i) => i.id !== action.payload.id),
+        items: state.items.filter((i) => i.id !== action.payload),
+      };
+
+    case "UPDATE_QTY":
+      return {
+        ...state,
+        items: state.items.map((i) =>
+          i.id === action.payload.id
+            ? {
+                ...i,
+                quantity: clamp(
+                  action.payload.quantity,
+                  1,
+                  i.stock ?? 999
+                ),
+              }
+            : i
+        ),
       };
 
     case "CLEAR":
       return { ...state, items: [] };
-
-    case "UPDATE_QTY": {
-      const { id, quantity } = action.payload;
-      const sanitized = sanitizeQuantity(quantity);
-      
-      return {
-        ...state,
-        items: state.items.map((i) =>
-          i.id === id ? { ...i, quantity: sanitized } : i
-        ),
-      };
-    }
-
-    case "INCREASE_QTY": {
-      const { id, delta = 1 } = action.payload;
-      const increment = sanitizeQuantity(delta);
-      
-      return {
-        ...state,
-        items: state.items.map((i) =>
-          i.id === id ? { ...i, quantity: i.quantity + increment } : i
-        ),
-      };
-    }
-
-    case "DECREASE_QTY": {
-      const { id, delta = 1 } = action.payload;
-      const decrement = sanitizeQuantity(delta);
-      
-      return {
-        ...state,
-        items: state.items.map((i) =>
-          i.id === id
-            ? { ...i, quantity: Math.max(1, i.quantity - decrement) }
-            : i
-        ),
-      };
-    }
 
     default:
       return state;
   }
 };
 
-/**
- * Provider Component
- */
-export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(reducer, {
+/* ========================================================================== */
+/* Provider                                                                   */
+/* ========================================================================== */
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(cartReducer, {
     items: [],
     initialized: false,
   });
 
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isMountedRef = useRef(true);
+  const saveTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize from localStorage on mount
+  /* Load from storage */
   useEffect(() => {
-    isMountedRef.current = true;
-
-    const loadCart = () => {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-          dispatch({ type: "INIT", payload: [] });
-          return;
-        }
-
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-          console.warn("[Cart] Invalid stored data format, resetting cart");
-          localStorage.removeItem(STORAGE_KEY);
-          dispatch({ type: "INIT", payload: [] });
-          return;
-        }
-
-        // Validate each item has required fields
-        const validItems = parsed.filter(
-          (item: any) =>
-            item &&
-            typeof item === "object" &&
-            typeof item.id === "string" &&
-            typeof item.name === "string" &&
-            typeof item.price === "number"
-        );
-
-        dispatch({ type: "INIT", payload: validItems });
-      } catch (err) {
-        console.error("[Cart] Failed to load from localStorage:", err);
-        dispatch({ type: "INIT", payload: [] });
-      }
-    };
-
-    loadCart();
-
-    return () => {
-      isMountedRef.current = false;
-    };
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? validateStoredItems(JSON.parse(raw)) : [];
+      dispatch({ type: "INIT", payload: parsed });
+    } catch {
+      dispatch({ type: "INIT", payload: [] });
+    }
   }, []);
 
-  // Persist to localStorage with debouncing
+  /* Persist (debounced) */
   useEffect(() => {
     if (!state.initialized) return;
 
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
+    if (saveTimer.current) clearTimeout(saveTimer.current);
 
-    saveTimerRef.current = setTimeout(() => {
+    saveTimer.current = setTimeout(() => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
-      } catch (err) {
-        console.error("[Cart] Failed to save to localStorage:", err);
+      } catch {
+        /* silent fail */
       }
-    }, 300);
-
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
+    }, 250);
   }, [state.items, state.initialized]);
 
-  // Cross-tab synchronization
+  /* Cross-tab sync */
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY || !isMountedRef.current) return;
+    const handler = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY) return;
 
       try {
-        const newValue = e.newValue ? JSON.parse(e.newValue) : [];
-        if (Array.isArray(newValue)) {
-          dispatch({ type: "INIT", payload: newValue });
-        }
-      } catch (err) {
-        console.error("[Cart] Failed to sync from storage event:", err);
-      }
+        const parsed = e.newValue
+          ? validateStoredItems(JSON.parse(e.newValue))
+          : [];
+        dispatch({ type: "INIT", payload: parsed });
+      } catch {}
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
   }, []);
 
-  // API Methods
-  const addToCart = useCallback((item: CartItem) => {
-    dispatch({ type: "ADD", payload: item });
-  }, []);
+  /* Actions */
+  const addItem = useCallback(
+    (item: CartItem) => dispatch({ type: "ADD", payload: item }),
+    []
+  );
 
-  const removeFromCart = useCallback((id: string) => {
-    dispatch({ type: "REMOVE", payload: { id } });
-  }, []);
+  const removeItem = useCallback(
+    (id: string) => dispatch({ type: "REMOVE", payload: id }),
+    []
+  );
 
-  const clearCart = useCallback(() => {
-    dispatch({ type: "CLEAR" });
-  }, []);
+  const updateQuantity = useCallback(
+    (id: string, quantity: number) =>
+      dispatch({ type: "UPDATE_QTY", payload: { id, quantity } }),
+    []
+  );
 
-  const updateQuantity = useCallback((id: string, quantity: number) => {
-    dispatch({ type: "UPDATE_QTY", payload: { id, quantity } });
-  }, []);
+  const clearCart = useCallback(
+    () => dispatch({ type: "CLEAR" }),
+    []
+  );
 
-  const increaseQty = useCallback((id: string, delta = 1) => {
-    dispatch({ type: "INCREASE_QTY", payload: { id, delta } });
-  }, []);
+  /* Derived values */
+  const availableItems = useMemo(
+    () => state.items.filter((i) => i.inStock !== false),
+    [state.items]
+  );
 
-  const decreaseQty = useCallback((id: string, delta = 1) => {
-    dispatch({ type: "DECREASE_QTY", payload: { id, delta } });
-  }, []);
+  const unavailableItems = useMemo(
+    () => state.items.filter((i) => i.inStock === false),
+    [state.items]
+  );
 
-  const getCartTotal = useCallback(() => {
-    return state.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-  }, [state.items]);
+  const subtotal = useMemo(
+    () =>
+      availableItems.reduce(
+        (sum, i) => sum + i.price * i.quantity,
+        0
+      ),
+    [availableItems]
+  );
 
-  const getTotalItems = useCallback(() => {
-    return state.items.reduce((sum, item) => sum + item.quantity, 0);
-  }, [state.items]);
+  const totalItems = useMemo(
+    () => state.items.reduce((sum, i) => sum + i.quantity, 0),
+    [state.items]
+  );
 
-  const openCart = useCallback(() => setIsCartOpen(true), []);
-  const closeCart = useCallback(() => setIsCartOpen(false), []);
-  const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
-
-  const value = useMemo<CartContextType>(
+  const value = useMemo<CartContextValue>(
     () => ({
-      cartItems: state.items,
-      addToCart,
-      removeFromCart,
-      clearCart,
-      updateQuantity,
-      increaseQty,
-      decreaseQty,
-      getCartTotal,
-      getTotalItems,
-      isCartOpen,
-      openCart,
-      closeCart,
-      toggleCart,
+      items: state.items,
+      availableItems,
+      unavailableItems,
+      subtotal,
+      totalItems,
       isInitialized: state.initialized,
+
+      /* Public API */
+      addToCart: addItem, // 🔑 FIXES YOUR ERROR
+      addItem,            // legacy-safe
+      removeItem,
+      updateQuantity,
+      clearCart,
     }),
     [
       state.items,
+      availableItems,
+      unavailableItems,
+      subtotal,
+      totalItems,
       state.initialized,
-      addToCart,
-      removeFromCart,
-      clearCart,
+      addItem,
+      removeItem,
       updateQuantity,
-      increaseQty,
-      decreaseQty,
-      getCartTotal,
-      getTotalItems,
-      isCartOpen,
-      openCart,
-      closeCart,
-      toggleCart,
+      clearCart,
     ]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-};
+}
 
-/**
- * Custom Hook
- */
-export const useCart = (): CartContextType => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
+/* ========================================================================== */
+/* Hooks                                                                      */
+/* ========================================================================== */
+
+export function useCart(): CartContextValue {
+  const ctx = useContext(CartContext);
+  if (!ctx) {
+    throw new Error("useCart must be used within CartProvider");
   }
-  return context;
-};
+  return ctx;
+}
 
-/**
- * Hook for cart item count (optimized for badge displays)
- */
-export const useCartCount = (): number => {
-  const { getTotalItems } = useCart();
-  return getTotalItems();
-};
-
-/**
- * Hook for cart total (optimized for price displays)
- */
-export const useCartTotal = (): number => {
-  const { getCartTotal } = useCart();
-  return getCartTotal();
-};
+export const useCartCount = () => useCart().totalItems;
+export const useCartTotal = () => useCart().subtotal;

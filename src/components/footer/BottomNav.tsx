@@ -1,148 +1,176 @@
+//src/components/footer/BottomNav.tsx
+
 "use client";
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Home, ShoppingBag, ShoppingCart, MapPin, User } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
 import styles from "./BottomNav.module.css";
 
-interface BottomNavProps {
-  onCartToggle?: () => void;
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ElementType;
+  ariaLabel: string;
+  badge?: string;
+  external?: boolean;
+  showCartBadge?: boolean;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ onCartToggle }) => {
+const BottomNav: React.FC = () => {
   const router = useRouter();
-  const { getTotalItems } = useCart();
-  const totalItems = getTotalItems?.() ?? 0;
+  const pathname = usePathname();
+  const { totalItems } = useCart();
 
-  const navItems = [
+  const handleCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast.success("Opening your cart...", { duration: 1500 });
+    setTimeout(() => router.push("/cart"), 300);
+  };
+
+  const navItems: NavItem[] = [
     {
       to: "/",
       label: "Home",
-      icon: <Home strokeWidth={1.8} />,
+      icon: Home,
+      ariaLabel: "Navigate to home page",
     },
-
     {
       to: "/login",
       label: "Login",
-      icon: <User strokeWidth={1.8} />,
+      icon: User,
+      ariaLabel: "Navigate to login page",
     },
-
     {
       to: "/offers",
       label: "Offers",
-      icon: <ShoppingBag strokeWidth={1.8} />,
+      icon: ShoppingBag,
       badge: "New",
+      ariaLabel: "View special offers",
     },
-
     {
       to: "/cart",
       label: "Cart",
-      icon: (
-        <div className={styles.iconWithBadge}>
-          <ShoppingCart strokeWidth={1.8} className={styles.cartIcon} />
-          {totalItems > 0 && (
-            <span className={styles.cartCount}>{totalItems}</span>
-          )}
-        </div>
-      ),
-
-      // Special onClick behavior preserved
-      onClick: () => {
-        toast.success("Opening your cart...", { duration: 1800 });
-        onCartToggle?.();
-        setTimeout(() => router.push("/cart"), 500);
-      },
+      icon: ShoppingCart,
+      ariaLabel: `View cart with ${totalItems} item${totalItems !== 1 ? "s" : ""}`,
+      showCartBadge: true,
     },
-
     {
       to: "https://www.google.com/maps/dir/-1.1010048,37.011456/HEALTHFIELD+PHARMACY,+Jkuat,+Muramati+road,+Gate+C+Rd,+Juja",
       label: "Stores",
-      icon: <MapPin strokeWidth={1.8} className={styles.mapIcon} />,
+      icon: MapPin,
       external: true,
+      ariaLabel: "Get directions to store",
     },
   ];
+
+  const renderNavItem = (item: NavItem) => {
+    const isActive = pathname === item.to;
+    const Icon = item.icon;
+
+    const iconElement = (
+      <motion.div
+        className={styles.iconWrapper}
+        whileTap={{ scale: 0.85 }}
+        whileHover={{ y: -2 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <span className={styles.icon}>
+          <Icon strokeWidth={1.8} size={24} />
+          
+          {/* Cart badge with animation */}
+          {item.showCartBadge && totalItems > 0 && (
+            <motion.span
+              className={styles.cartBadge}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 15 }}
+              key={totalItems}
+            >
+              {totalItems > 99 ? "99+" : totalItems}
+            </motion.span>
+          )}
+          
+          {/* Static badge for offers */}
+          {item.badge && !item.showCartBadge && (
+            <span className={styles.staticBadge}>{item.badge}</span>
+          )}
+        </span>
+      </motion.div>
+    );
+
+    const content = (
+      <>
+        {iconElement}
+        <span className={`${styles.label} ${isActive ? styles.activeLabel : ""}`}>
+          {item.label}
+        </span>
+      </>
+    );
+
+    // External link
+    if (item.external) {
+      return (
+        <a
+          key={item.label}
+          href={item.to}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={item.ariaLabel}
+          className={styles.navItem}
+        >
+          {content}
+        </a>
+      );
+    }
+
+    // Cart with special handler
+    if (item.showCartBadge) {
+      return (
+        <Link
+          key={item.label}
+          href={item.to}
+          aria-label={item.ariaLabel}
+          onClick={handleCartClick}
+          className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    // Regular link
+    return (
+      <Link
+        key={item.label}
+        href={item.to}
+        aria-label={item.ariaLabel}
+        className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+      >
+        {content}
+      </Link>
+    );
+  };
 
   return (
     <motion.nav
       className={styles.bottomNav}
       role="navigation"
       aria-label="Primary navigation"
-      initial={{ y: 60, opacity: 0 }}
+      initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 80, damping: 15 }}
+      transition={{
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+        mass: 0.8,
+      }}
     >
-      {navItems.map(({ to, label, icon, badge, external, onClick }) =>
-        external ? (
-          // ===========================
-          // External Link (Google Maps)
-          // ===========================
-          <a
-            key={label}
-            href={to}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Open ${label}`}
-            className={`${styles.navItem} ${styles.externalLink}`}
-          >
-            <motion.div
-              className={styles.iconWrapper}
-              whileTap={{ scale: 0.9 }}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className={styles.icon}>{icon}</span>
-              {badge && <span className={styles.badge}>{badge}</span>}
-            </motion.div>
-            <span className={styles.label}>{label}</span>
-          </a>
-        ) : onClick ? (
-          // ==================================
-          // Special Case: Cart Button Handling
-          // ==================================
-          <button
-            key={label}
-            className={styles.navItem}
-            aria-label={label}
-            onClick={onClick}
-          >
-            <motion.div
-              className={styles.iconWrapper}
-              whileTap={{ scale: 0.9 }}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className={styles.icon}>{icon}</span>
-              {badge && <span className={styles.badge}>{badge}</span>}
-            </motion.div>
-            <span className={styles.label}>{label}</span>
-          </button>
-        ) : (
-          // ============================
-          // Internal Next.js Navigation
-          // ============================
-          <Link
-            key={label}
-            href={to}
-            aria-label={label}
-            className={styles.navItem}
-          >
-            <motion.div
-              className={styles.iconWrapper}
-              whileTap={{ scale: 0.9 }}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className={styles.icon}>{icon}</span>
-              {badge && <span className={styles.badge}>{badge}</span>}
-            </motion.div>
-            <span className={styles.label}>{label}</span>
-          </Link>
-        )
-      )}
+      {navItems.map(renderNavItem)}
     </motion.nav>
   );
 };

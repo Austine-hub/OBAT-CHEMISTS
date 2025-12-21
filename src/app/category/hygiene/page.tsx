@@ -1,101 +1,78 @@
 "use client";
 
-// ===============================================================
-// src/app/category/hygiene/page.tsx
-// Optimized • Modern • DRY • Strict • Robust
-// ===============================================================
-
-import React, { useRef, useState, useEffect, memo, useCallback } from "react";
+import { useRef, useState, useEffect, memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
+import { OffersDataUtils, type ProductListing } from "@/data/hygieneData";
 import styles from "./Hygiene.module.css";
 
-// Data + Types
-import {
-  OffersDataUtils,
-  type ProductListing,
-} from "@/data/hygieneData";
-
-const HygienePage: React.FC = memo(() => {
+const HygienePage = memo(() => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
 
-  // ===========================================================
-  // Fetch products (strict)
-  // ===========================================================
   const products: ProductListing[] = OffersDataUtils.getListingProducts() ?? [];
 
-  // ===========================================================
-  // Scroll logic (debounced + robust)
-  // ===========================================================
   const checkScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = el;
-
     setCanScrollLeft(scrollLeft > 0);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
   }, []);
 
   useEffect(() => {
     checkScroll();
-    window.addEventListener("resize", checkScroll);
-    return () => window.removeEventListener("resize", checkScroll);
+    const handleResize = () => checkScroll();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [checkScroll]);
 
-  const scroll = (direction: "left" | "right") => {
+  const scroll = useCallback((direction: "left" | "right") => {
     const el = scrollRef.current;
     if (!el) return;
 
-    const scrollAmount = el.clientWidth * 0.8;
-
     el.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
+      left: direction === "left" ? -el.clientWidth * 0.8 : el.clientWidth * 0.8,
       behavior: "smooth",
     });
-  };
+  }, []);
 
-  // ===========================================================
-  // Navigation → /dropdowns/hygiene/[slug]
-  // ===========================================================
-  const handleViewDetails = (productId: string | number) => {
-    if (!productId) return;
-    const url = `/dropdowns/hygiene/${productId}`;
-    router.push(url);
-  };
+  const handleViewDetails = useCallback(
+    (productId: string | number) => {
+      if (!productId) return;
+      router.push(`/dropdowns/hygiene/${productId}`);
+    },
+    [router]
+  );
 
-  // ===========================================================
-  // Add to Cart
-  // ===========================================================
-  const handleAddToCart = (product: ProductListing) => {
-    if (!product) return;
+  const handleAddToCart = useCallback(
+    (product: ProductListing) => {
+      if (!product) return;
 
-    addToCart({
-      id: String(product.id),
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-    });
+      addItem({
+        id: String(product.id),
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+      });
 
-    toast.success(`${product.name} added to cart 🛒`, { duration: 1800 });
-  };
+      toast.success(`${product.name} added to cart 🛒`, { duration: 1800 });
+    },
+    [addItem]
+  );
 
-  // ===========================================================
-  // JSX
-  // ===========================================================
   return (
     <section className={styles.offersSection}>
       <div className={styles.container}>
-        {/* Header */}
         <header className={styles.header}>
           <h2 className={styles.title}>Campus Essentials</h2>
 
@@ -136,7 +113,6 @@ const HygienePage: React.FC = memo(() => {
           </div>
         </header>
 
-        {/* Product List */}
         <div
           className={styles.productsWrapper}
           ref={scrollRef}
@@ -144,12 +120,7 @@ const HygienePage: React.FC = memo(() => {
         >
           <div className={styles.productsGrid}>
             {products.map((product) => (
-              <article
-                key={product.id}
-                className={styles.productCard}
-                role="article"
-              >
-                {/* Trending */}
+              <article key={product.id} className={styles.productCard}>
                 {product.isTrending && (
                   <span className={styles.trendingBadge}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -159,11 +130,17 @@ const HygienePage: React.FC = memo(() => {
                   </span>
                 )}
 
-                {/* Image */}
                 <div
                   className={styles.imageWrapper}
                   onClick={() => handleViewDetails(product.id)}
                   role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleViewDetails(product.id);
+                    }
+                  }}
                 >
                   {typeof product.image === "string" ? (
                     <img
@@ -182,7 +159,6 @@ const HygienePage: React.FC = memo(() => {
                   )}
                 </div>
 
-                {/* Product Info */}
                 <div className={styles.productInfo}>
                   <h3 className={styles.productName}>{product.name}</h3>
                   <p className={styles.productDesc}>{product.description}</p>
@@ -190,7 +166,6 @@ const HygienePage: React.FC = memo(() => {
                   <p className={styles.price}>KES {product.price.toFixed(2)}</p>
                 </div>
 
-                {/* Footer */}
                 <footer className={styles.cardFooter}>
                   <button
                     className={styles.addBtn}
@@ -214,8 +189,10 @@ const HygienePage: React.FC = memo(() => {
           </div>
         </div>
 
-        {/* View All */}
-        <button className={styles.viewAll} onClick={() => router.push("/dropdowns/hygiene")}>
+        <button
+          className={styles.viewAll}
+          onClick={() => router.push("/dropdowns/hygiene")}
+        >
           View All Campus Essentials
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
