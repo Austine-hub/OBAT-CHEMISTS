@@ -1,111 +1,114 @@
+//src/app/deals/[id]/page.tsx
+
 "use client";
 
-import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useCallback, useState } from "react";
+
 import styles from "./DealsOfTheDayDetails.module.css";
+import { getDealInKSH } from "@/data/details/deals";
+import { useCart } from "@/context/CartContext";
 
-// MODEL + CURRENCY UTILS
-import { getDealInKSH, Deal } from "@/data/details/deals";
-
-export default function ProductDetailsPage() {
+export default function DealDetailsPage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const params = useParams();
-  const productId = params?.id as string;
+  const { addToCart } = useCart();
 
-  // Get enriched deal object with KSH prices
-  const deal: (Deal & {
-    mrpKSH: number;
-    priceKSH: number;
-    mrpFormatted: string;
-    priceFormatted: string;
-  }) | undefined = getDealInKSH(productId);
+  const deal = getDealInKSH(id);
+  const [toast, setToast] = useState(false);
 
-  // If deal not found, render fallback
+  const handleAdd = useCallback(() => {
+    if (!deal) return;
+
+    addToCart({
+      id: deal.id,
+      name: deal.name,
+      price: deal.priceKSH,
+      quantity: 1,
+      image: deal.img,
+      originalPrice: deal.mrpKSH,
+      discount: deal.discount,
+      inStock: true,
+    });
+
+    setToast(true);
+    setTimeout(() => setToast(false), 2200);
+  }, [addToCart, deal]);
+
   if (!deal) {
     return (
-      <motion.div
-        className={styles.notFound}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.35 }}
-      >
-        <p>❗ Product not found.</p>
-        <Link href="/#deals" className={styles.goBackBtn}>
-          ← Back to Deals
-        </Link>
-      </motion.div>
+      <div className={styles.notFound}>
+        <p>Product not found</p>
+        <Link href="/#deals">← Back to deals</Link>
+      </div>
     );
   }
 
   return (
     <motion.div
       className={styles.wrapper}
-      initial={{ opacity: 0, y: 25 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
     >
-      {/* BACK BUTTON */}
-      <button
-        className={styles.backBtn}
-        onClick={() => router.back()}
-        aria-label="Go back"
-      >
+      <button onClick={() => router.back()} className={styles.back}>
         ← Back
       </button>
 
-      {/* MAIN CONTAINER */}
-      <div className={styles.container}>
+      <div className={styles.grid}>
         {/* IMAGE */}
-        <motion.div
-          className={styles.imgBox}
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.28 }}
-        >
+        <div className={styles.imageWrap}>
           <Image
             src={deal.img}
             alt={deal.name}
             width={420}
             height={420}
-            className={styles.image}
             priority
           />
-        </motion.div>
+        </div>
 
-        {/* PRODUCT INFO */}
+        {/* INFO */}
         <div className={styles.info}>
-          <h1 className={styles.title}>{deal.name}</h1>
+          <h1>{deal.name}</h1>
 
-          <p className={styles.mrp}>
-            MRP: <span className={styles.strike}>{deal.mrpFormatted}</span>
-          </p>
-
-          <div className={styles.priceBox}>
-            <span className={styles.finalPrice}>{deal.priceFormatted}</span>
+          <div className={styles.priceRow}>
+            <span className={styles.price}>{deal.priceFormatted}</span>
             {deal.discount > 0 && (
-              <span className={styles.discount}>
-                Save {deal.discount}% OFF
-              </span>
+              <span className={styles.discount}>-{deal.discount}%</span>
             )}
           </div>
 
-          {/* ADD TO CART BUTTON */}
+          <span className={styles.mrp}>{deal.mrpFormatted}</span>
+
           <motion.button
             whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.05 }}
-            className={styles.addBtn}
+            onClick={handleAdd}
+            className={styles.add}
           >
-            Add to Cart
+            Add to cart
           </motion.button>
 
-          {/* EXTRA INFO */}
-          <p className={styles.shipping}>
-            🚚 Free shipping on orders above KES 2,000
-          </p>
+          {/* TRUST / UX */}
+          <ul className={styles.meta}>
+            <li>🚚 Free delivery over KES 2,000</li>
+            <li>🔒 Secure checkout</li>
+            <li>↩️ Easy returns</li>
+          </ul>
         </div>
       </div>
+
+      {/* TOAST */}
+      {toast && (
+        <motion.div
+          className={styles.toast}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          ✓ Added to cart
+        </motion.div>
+      )}
     </motion.div>
   );
 }

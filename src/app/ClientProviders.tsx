@@ -1,12 +1,13 @@
-// ==================================
+//src/app/ClientProviders.tsx
 // ClientProviders.tsx (CLIENT)
-// ==================================
+
 "use client";
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import { Toaster } from "react-hot-toast";
 
 import Footer from "@/components/footer/Footer";
@@ -22,7 +23,6 @@ export default function ClientProviders({
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
 
-  // global route-change loader
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -39,20 +39,18 @@ export default function ClientProviders({
 
   return (
     <CartProvider>
-      <Toaster position="top-center" />
+      <WishlistProvider>
+        <Toaster position="top-center" />
 
-      {/* Global loader */}
-      {loading && <Loader mode="fullscreen" />}
+        {loading && <Loader mode="fullscreen" />}
 
-      {/* Top header + nav */}
-      <LayoutWrapper />
+        <LayoutWrapper />
 
-      {/* Content */}
-      <main>{children}</main>
+        <main>{children}</main>
 
-      {/* Footer */}
-      <Footer />
-      <BottomNav />
+        <Footer />
+        <BottomNav />
+      </WishlistProvider>
     </CartProvider>
   );
 }

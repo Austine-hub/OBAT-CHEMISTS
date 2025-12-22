@@ -1,6 +1,4 @@
 /*src/components/products/ProductGrid.module.css*/
-
-
 .section {
   max-width: 1440px;
   margin: 0 auto;
@@ -18,13 +16,13 @@
 .title {
   font-size: clamp(1.6rem, 3vw, 2.1rem);
   font-weight: 700;
-  color: #1a1a1a;
+  color: #111;
 }
 
 .viewAll {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   font-weight: 600;
   color: #e91e63;
   text-decoration: none;
@@ -47,14 +45,14 @@
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid #eee;
   overflow: hidden;
   transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .card:hover {
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
 /* BADGE */
@@ -149,6 +147,9 @@
 
 .pricing {
   margin-top: auto;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
 }
 
 .oldPrice {
@@ -174,7 +175,7 @@
   flex: 1;
   text-align: center;
   padding: 0.65rem;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 0.85rem;
   color: #555;
@@ -189,7 +190,7 @@
 .addToCart {
   flex: 1.2;
   padding: 0.65rem;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 0.85rem;
   border: 1px solid #e91e63;
@@ -199,9 +200,14 @@
   transition: all 0.25s ease;
 }
 
-.addToCart:hover {
+.addToCart:hover:not(:disabled) {
   background: #e91e63;
   color: #fff;
+}
+
+.addToCart:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* RESPONSIVE */

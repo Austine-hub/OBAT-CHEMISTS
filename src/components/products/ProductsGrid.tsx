@@ -10,7 +10,14 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
 import { useCart } from "@/context/CartContext";
-import { products, type Product } from "@/data/details/ProductGrid";
+import {
+  products,
+  type Product,
+  formatCurrency,
+  getDiscountPercent,
+  isInStock,
+} from "@/data/details/ProductGrid";
+
 import styles from "./ProductGrid.module.css";
 
 /* -------------------------------------------------------------------------- */
@@ -22,13 +29,28 @@ interface ProductCardProps {
   onAddToCart: (product: Product) => void;
 }
 
-const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
+const ProductCard = memo(function ProductCard({
+  product,
+  onAddToCart,
+}: ProductCardProps) {
+  // HARD GUARD — prevents runtime crashes forever
+  if (!product || typeof product.price !== "number") {
+    return null;
+  }
+
+  const discount = getDiscountPercent(product);
+  const inStock = isInStock(product);
+
   const handleAdd = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
+      if (!inStock) {
+        toast.error("Out of stock");
+        return;
+      }
       onAddToCart(product);
     },
-    [onAddToCart, product]
+    [onAddToCart, product, inStock]
   );
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -38,14 +60,19 @@ const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
       className={styles.card}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
+      aria-disabled={!inStock}
     >
-      {product.discount && (
-        <span className={styles.badge}>{product.discount}% OFF</span>
+      {discount > 0 && (
+        <span className={styles.badge}>{discount}% OFF</span>
       )}
 
       {/* Quick actions */}
       <div className={styles.actions}>
-        <button className={styles.iconBtn} onClick={stop} aria-label="Wishlist">
+        <button
+          className={styles.iconBtn}
+          onClick={stop}
+          aria-label="Add to wishlist"
+        >
           <Heart size={16} />
         </button>
 
@@ -62,13 +89,18 @@ const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
           className={styles.iconBtn}
           onClick={handleAdd}
           aria-label="Quick add to cart"
+          disabled={!inStock}
         >
           <ShoppingCart size={16} />
         </button>
       </div>
 
       {/* Image */}
-      <div className={styles.imageWrapper}>
+      <Link
+        href={`/products/${product.id}`}
+        className={styles.imageWrapper}
+        onClick={stop}
+      >
         <Image
           src={product.image}
           alt={product.name}
@@ -76,20 +108,21 @@ const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
           className={styles.image}
           sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, 25vw"
         />
-      </div>
+      </Link>
 
       {/* Content */}
       <div className={styles.content}>
         <h3 className={styles.name}>{product.name}</h3>
 
         <div className={styles.pricing}>
-          {product.originalPrice && (
+          {product.oldPrice && (
             <span className={styles.oldPrice}>
-              KES {product.originalPrice.toLocaleString()}
+              {formatCurrency(product.oldPrice, product.currency)}
             </span>
           )}
+
           <span className={styles.price}>
-            KES {product.currentPrice.toLocaleString()}
+            {formatCurrency(product.price, product.currency)}
           </span>
         </div>
 
@@ -102,8 +135,12 @@ const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
             View
           </Link>
 
-          <button className={styles.addToCart} onClick={handleAdd}>
-            Add to Cart
+          <button
+            className={styles.addToCart}
+            onClick={handleAdd}
+            disabled={!inStock}
+          >
+            {inStock ? "Add to cart" : "Out of stock"}
           </button>
         </div>
       </div>
@@ -111,13 +148,11 @@ const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => {
   );
 });
 
-ProductCard.displayName = "ProductCard";
-
 /* -------------------------------------------------------------------------- */
 /* Grid                                                                       */
 /* -------------------------------------------------------------------------- */
 
-export default function ProductGrid() {
+export default function ProductsGrid() {
   const { addToCart } = useCart();
 
   const handleAddToCart = useCallback(
@@ -125,11 +160,12 @@ export default function ProductGrid() {
       addToCart({
         id: String(product.id),
         name: product.name,
-        price: product.currentPrice,
+        price: product.price,
         quantity: 1,
         image: product.image,
-        originalPrice: product.originalPrice,
-        badge: product.discount ? `${product.discount}% OFF` : undefined,
+        category: product.category,
+        stock: product.stock,
+        inStock: product.stock > 0,
       });
 
       toast.success(`${product.name} added to cart`, {
@@ -143,7 +179,7 @@ export default function ProductGrid() {
     <section className={styles.section} aria-labelledby="products-title">
       <header className={styles.header}>
         <h2 id="products-title" className={styles.title}>
-          The Pink Rush
+          Popular Products
         </h2>
 
         <Link href="/products" className={styles.viewAll}>

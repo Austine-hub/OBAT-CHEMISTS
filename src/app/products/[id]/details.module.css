@@ -1,139 +1,189 @@
+/* src/app/products/[id]/details.module.css */
 .container {
+  max-width: 1200px;
+  margin: auto;
   padding: 1.5rem;
-  max-width: 1100px;
-  margin: 0 auto;
 }
 
 .backBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
   background: none;
-  font-size: 0.95rem;
+  border: none;
+  font-size: 0.9rem;
   cursor: pointer;
   margin-bottom: 1rem;
 }
 
-.wrapper {
+.layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2.5rem;
+  gap: 3rem;
 }
 
-.imageBox {
-  position: relative;
-  width: 100%;
-}
-
-.image {
-  width: 100%;
-  height: auto;
-  border-radius: 14px;
-  object-fit: cover;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
-}
-
-.discountTag {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: #ff0054;
-  color: white;
-  padding: 6px 10px;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-.infoBox {
+/* ---------------- Gallery ---------------- */
+.gallery {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.8rem;
 }
 
-.title {
-  font-size: 1.7rem;
-  font-weight: 700;
-  line-height: 1.3;
+.mainImage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
-.pricing {
+.thumbs {
   display: flex;
-  gap: 10px;
-  align-items: center;
+  gap: 0.5rem;
 }
 
-.oldPrice {
-  text-decoration: line-through;
-  color: #888;
-  font-size: 1rem;
+.thumb,
+.thumbActive {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.thumbActive {
+  border-color: #ff0054;
+}
+
+/* ---------------- Info ---------------- */
+.info h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #ffb400;
+}
+
+.reviews {
+  color: #666;
+  font-size: 0.85rem;
 }
 
 .price {
-  color: #ee0055;
-  font-weight: 700;
-  font-size: 1.4rem;
-}
-
-.desc {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #444;
-}
-
-.actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.wishlistBtn,
-.cartBtn {
-  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  font-weight: 600;
+  gap: 0.6rem;
+  font-size: 1.4rem;
+  margin: 0.6rem 0;
+}
+
+.old {
+  text-decoration: line-through;
+  color: #999;
+}
+
+/* ---------------- Actions ---------------- */
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.cartBtn {
+  flex: 1;
+  background: #ff0054;
+  color: #fff;
   border: none;
+  border-radius: 10px;
+  padding: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cartBtn:disabled {
+  opacity: 0.5;
 }
 
 .wishlistBtn {
   background: #f2f2f2;
+  border: none;
+  border-radius: 10px;
+  width: 48px;
+  cursor: pointer;
 }
 
-.cartBtn {
+/* ---------------- Tabs ---------------- */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+.tab,
+.tabActive {
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.tab {
+  background: #f4f4f4;
+}
+
+.tabActive {
   background: #ff0054;
-  color: white;
+  color: #fff;
 }
 
-.meta {
-  margin-top: 1rem;
-  font-size: 0.95rem;
-  color: #666;
+.tabPanel {
+  margin-top: 0.8rem;
+  line-height: 1.6;
 }
 
-.notFound {
-  padding: 3rem;
+/* ---------------- Related ---------------- */
+.related {
+  margin-top: 3rem;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.relatedCard {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 0.85rem;
   text-align: center;
-  font-size: 1.2rem;
 }
 
-/* ==== MOBILE ==== */
+/* ---------------- Skeleton ---------------- */
+.skeleton {
+  height: 400px;
+  background: linear-gradient(90deg, #eee, #f5f5f5, #eee);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -400px;
+  }
+  to {
+    background-position: 400px;
+  }
+}
+
+/* ---------------- Mobile ---------------- */
 @media (max-width: 768px) {
-  .wrapper {
+  .layout {
     grid-template-columns: 1fr;
-  }
-
-  .title {
-    font-size: 1.4rem;
-  }
-
-  .price {
-    font-size: 1.3rem;
   }
 }

@@ -1,199 +1,301 @@
 //src/components/products/ProductGrid2.tsx
+
 "use client";
 
-import React, { useMemo, KeyboardEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
-import { Heart, Eye, ShoppingCart } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import {
+  ArrowLeft,
+  Heart,
+  ShoppingCart,
+  Star,
+  Minus,
+  Plus,
+  Share2,
+} from "lucide-react";
+
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import {
+  getProductById,
+  getRelatedProducts,
+  formatPrice,
+  parseId,
+  type Product,
+} from "@/data/details/products";
 
 import styles from "./ProductGrid2.module.css";
-import { useCart } from "@/context/CartContext";
-import { productsArray, formatPrice } from "@/data/details/products";
 
 /* -------------------------------------------------------------------------- */
-/* Types                                                                      */
+/* Star Rating                                                                */
 /* -------------------------------------------------------------------------- */
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  description?: string;
-  category?: string;
+function StarRating({ rating, count }: { rating: number; count: number }) {
+  const filled = Math.round(rating);
+
+  return (
+    <div className={styles.ratingRow} aria-label={`Rating ${rating} of 5`}>
+      <div className={styles.stars}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            size={16}
+            className={styles.star}
+            fill={i < filled ? "var(--accent-gold)" : "none"}
+            aria-hidden
+          />
+        ))}
+      </div>
+      <span className={styles.reviewCount}>
+        {rating} ({count})
+      </span>
+    </div>
+  );
 }
 
 /* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
+/* Page                                                                       */
 /* -------------------------------------------------------------------------- */
 
-const navigateToProduct = (
-  router: ReturnType<typeof useRouter>,
-  id: number
-) => router.push(`/products2/${id}`);
-
-const handleKeyboardNav =
-  (router: ReturnType<typeof useRouter>, id: number) =>
-  (e: KeyboardEvent<HTMLElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      navigateToProduct(router, id);
-    }
-  };
-
-/* -------------------------------------------------------------------------- */
-/* Component                                                                  */
-/* -------------------------------------------------------------------------- */
-
-export default function ProductGrid2() {
+export default function ProductDetailsPage() {
   const router = useRouter();
+  const params = useParams<{ id?: string }>();
+
+  const productId = useMemo(
+    () => parseId(params?.id ?? null),
+    [params?.id]
+  );
+
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
-  const products = useMemo(() => productsArray as Product[], []);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [qty, setQty] = useState(1);
+  const [mounted, setMounted] = useState(false);
 
-  const handleAddToCart = (product: Product) => {
+  /* ---------------- Hydration guard ---------------- */
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  /* ---------------- Load product ---------------- */
+  useEffect(() => {
+    if (!productId) return;
+    const found = getProductById(productId);
+    if (found) setProduct(found);
+  }, [productId]);
+
+  /* ---------------- Derived ---------------- */
+  const productIdStr = useMemo(
+    () => (product ? String(product.id) : null),
+    [product]
+  );
+
+  const relatedProducts = useMemo(
+    () => (product ? getRelatedProducts(product) : []),
+    [product]
+  );
+
+  const inWishlist = useMemo(() => {
+    if (!mounted || !productIdStr) return false;
+    return isInWishlist(productIdStr);
+  }, [mounted, productIdStr, isInWishlist]);
+
+  const isOutOfStock = product?.inStock === false;
+
+  /* ---------------- Handlers ---------------- */
+
+  const handleAddToCart = useCallback(() => {
+    if (!product || isOutOfStock) return;
+
     addToCart({
+      ...product,
       id: String(product.id),
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-      inStock: true,
+      quantity: qty,
     });
 
-    toast.success(`${product.name} added to cart`, {
-      icon: "🛒",
-      duration: 2500,
-    });
-  };
+    toast.success("Added to cart 🛒");
+  }, [product, qty, isOutOfStock, addToCart]);
 
-  if (!products.length) {
+  const toggleWishlist = useCallback(() => {
+    if (!product || !productIdStr) return;
+
+    if (inWishlist) {
+      removeFromWishlist(productIdStr);
+      toast("Removed from wishlist");
+    } else {
+      addToWishlist({
+        id: productIdStr,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        category: product.category,
+      });
+      toast.success("Saved ❤️");
+    }
+  }, [
+    product,
+    productIdStr,
+    inWishlist,
+    addToWishlist,
+    removeFromWishlist,
+  ]);
+
+  /* ---------------- Loading ---------------- */
+
+  if (!product) {
     return (
-      <section className={styles.empty} aria-live="polite">
-        <h2 className={styles.emptyTitle}>No products available</h2>
-        <p className={styles.emptyDesc}>
-          Please check back later for new arrivals.
-        </p>
-      </section>
+      <div className={styles.loader}>
+        <motion.div
+          className={styles.spinner}
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        />
+      </div>
     );
   }
 
-  return (
-    <section className={styles.container} aria-labelledby="new-at-obat">
-      {/* Header */}
-      <header className={styles.header}>
-        <h2 id="new-at-obat" className={styles.title}>
-          New at OBAT
-        </h2>
+  /* ---------------- Render ---------------- */
 
-        <Link href="/products" className={styles.viewAll}>
-          View all
-        </Link>
+  return (
+    <main className={styles.container}>
+      {/* Top bar */}
+      <header className={styles.nav}>
+        <button onClick={() => router.back()} className={styles.iconBtn}>
+          <ArrowLeft size={20} />
+          Back
+        </button>
+
+        <button
+          className={styles.iconBtn}
+          onClick={() => toast.success("Link copied")}
+        >
+          <Share2 size={18} />
+        </button>
       </header>
 
-      {/* Grid */}
-      <div className={styles.grid} role="list">
-        {products.map((product) => {
-          const priceLabel =
-            formatPrice?.(product.price) ?? `KES ${product.price}`;
+      {/* Main */}
+      <section className={styles.grid}>
+        {/* Image */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className={styles.imageWrap}
+        >
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            priority
+            className={styles.image}
+          />
+        </motion.div>
 
-          return (
-            <motion.article
-              key={product.id}
-              className={styles.card}
-              role="listitem"
-              tabIndex={0}
-              layout
-              whileHover={{ y: -6 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigateToProduct(router, product.id)}
-              onKeyDown={handleKeyboardNav(router, product.id)}
+        {/* Info */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className={styles.info}
+        >
+          <span className={styles.category}>{product.category}</span>
+          <h1>{product.name}</h1>
+
+          <StarRating
+            rating={product.rating}
+            count={product.reviewCount}
+          />
+
+          <div className={styles.priceRow}>
+            <span className={styles.price}>
+              {formatPrice(product.price)}
+            </span>
+            {isOutOfStock && (
+              <span className={styles.stock}>Out of stock</span>
+            )}
+          </div>
+
+          <p className={styles.desc}>{product.description}</p>
+
+          {/* Quantity */}
+          <div className={styles.qtyRow}>
+            <button onClick={() => setQty(Math.max(1, qty - 1))}>
+              <Minus size={16} />
+            </button>
+            <span>{qty}</span>
+            <button onClick={() => setQty(qty + 1)}>
+              <Plus size={16} />
+            </button>
+          </div>
+
+          {/* Actions */}
+          <div className={styles.actions}>
+            <button
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              className={styles.cartBtn}
             >
-              {/* Image */}
-              <div className={styles.media}>
+              <ShoppingCart size={20} />
+              Add to cart
+            </button>
+
+            {/* 🔒 Hydration-safe wishlist */}
+            <button
+              onClick={toggleWishlist}
+              className={`${styles.wishBtn} ${
+                mounted && inWishlist ? styles.active : ""
+              }`}
+              aria-label="Wishlist"
+            >
+              <Heart
+                size={22}
+                fill={
+                  mounted && inWishlist
+                    ? "var(--accent-red)"
+                    : "none"
+                }
+              />
+            </button>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Related */}
+      <section className={styles.related}>
+        <h2>You may also like</h2>
+
+        <div className={styles.relatedGrid}>
+          <AnimatePresence>
+            {relatedProducts.map((item) => (
+              <motion.article
+                key={String(item.id)}
+                whileHover={{ y: -4 }}
+                className={styles.card}
+                onClick={() =>
+                  router.push(`/products2/${item.id}`)
+                }
+              >
                 <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={520}
-                  height={520}
-                  className={styles.image}
-                  sizes="(max-width: 768px) 45vw, 240px"
-                  priority={false}
+                  src={item.image}
+                  alt={item.name}
+                  fill
                 />
-
-                {/* Overlay actions */}
-                <div className={styles.overlay}>
-                  <button
-                    className={styles.iconBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toast("Wishlist coming soon ❤️");
-                    }}
-                    aria-label="Add to wishlist"
-                  >
-                    <Heart size={16} />
-                  </button>
-
-                  <button
-                    className={styles.iconBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/products2/${product.id}`);
-                    }}
-                    aria-label="View product"
-                  >
-                    <Eye size={16} />
-                  </button>
+                <div>
+                  <h4>{item.name}</h4>
+                  <span>{formatPrice(item.price)}</span>
                 </div>
-              </div>
-
-              {/* Content */}
-              <div className={styles.content}>
-                <h3 className={styles.productName}>
-                  <Link
-                    href={`/products2/${product.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className={styles.productLink}
-                  >
-                    {product.name}
-                  </Link>
-                </h3>
-
-                <div className={styles.meta}>
-                  <span className={styles.price}>{priceLabel}</span>
-
-                  <div className={styles.actions}>
-                    <button
-                      className={styles.viewBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/products2/${product.id}`);
-                      }}
-                    >
-                      View
-                    </button>
-
-                    <button
-                      className={styles.addBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                      aria-label={`Add ${product.name} to cart`}
-                    >
-                      <ShoppingCart size={14} />
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.article>
-          );
-        })}
-      </div>
-    </section>
+              </motion.article>
+            ))}
+          </AnimatePresence>
+        </div>
+      </section>
+    </main>
   );
 }

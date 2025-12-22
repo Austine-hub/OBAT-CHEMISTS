@@ -1,237 +1,376 @@
+//src/app/products2/[id]/page.tsx
+
+// src/app/products2/[id]/page.tsx
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Heart, ShoppingCart, ArrowLeft } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
+import {
+  ArrowLeft,
+  Heart,
+  ShoppingCart,
+  Star,
+  Minus,
+  Plus,
+  Share2,
+} from "lucide-react";
+
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import {
+  getProductById,
+  getRelatedProducts,
+  formatPrice,
+  parseId,
+  type Product,
+} from "@/data/details/products";
+
 import styles from "./DetailsPage.module.css";
 
-// MVC: import Controller / Data helpers
-import { getProductById, formatPrice, parseId, Product as ProductModel } from "@/data/details/products";
+/* -------------------------------------------------------------------------- */
+/* Star Rating Component                                                       */
+/* -------------------------------------------------------------------------- */
 
-interface LocalState {
-  quantity: number;
-  addedMessage: string | null;
-}
+type StarRatingProps = {
+  rating?: number;
+  count?: number;
+};
 
-export default function DetailsPage() {
+const StarRating = ({ rating = 4.8, count = 128 }: StarRatingProps) => {
+  const filledStars = Math.round(rating);
+
+  return (
+    <div
+      className={styles.ratingRow}
+      aria-label={`Rating: ${rating} out of 5 stars`}
+    >
+      <div className={styles.stars}>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star
+            key={i}
+            size={16}
+            className={styles.star}
+            fill={i < filledStars ? "var(--accent-gold)" : "none"}
+            aria-hidden
+          />
+        ))}
+      </div>
+      <span className={styles.reviewCount}>
+        {rating} ({count} reviews)
+      </span>
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* Main Page                                                                   */
+/* -------------------------------------------------------------------------- */
+
+export default function ProductDetailsPage() {
   const router = useRouter();
-  const params = useParams();
-  const id = parseId(params?.id ?? null);
+  const params = useParams<{ id?: string }>();
 
-  const [product, setProduct] = useState<ProductModel | null>(null);
-  const [state, setState] = useState<LocalState>({
-    quantity: 1,
-    addedMessage: null
-  });
+  const productId = useMemo(
+    () => parseId(params?.id ?? null),
+    [params?.id]
+  );
 
-  const announceRef = useRef<HTMLDivElement | null>(null);
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
-  // Fetch product safely
+  const [product, setProduct] = useState<Product | null>(null);
+  const [qty, setQty] = useState<number>(1);
+
+  /* ---------------------------------------------------------------------- */
+  /* Load Product                                                           */
+  /* ---------------------------------------------------------------------- */
+
   useEffect(() => {
-    if (id === null) {
-      setProduct(null);
-      return;
+    if (productId === null) return;
+
+    const found = getProductById(productId);
+    if (found) {
+      setProduct(found);
     }
-    setProduct(getProductById(id) ?? null);
-  }, [id]);
+  }, [productId]);
 
-  // A11y live region announcer
-  useEffect(() => {
-    if (!state.addedMessage || !announceRef.current) return;
+  /* ---------------------------------------------------------------------- */
+  /* Derived Values                                                         */
+  /* ---------------------------------------------------------------------- */
 
-    announceRef.current.textContent = state.addedMessage;
+  const productIdStr = useMemo(
+    () => (product ? String(product.id) : null),
+    [product]
+  );
 
-    const t = setTimeout(() => {
-      if (announceRef.current) announceRef.current.textContent = "";
-      setState((s) => ({ ...s, addedMessage: null }));
-    }, 2600);
+  const relatedProducts = useMemo(
+    () => (product ? getRelatedProducts(product) : []),
+    [product]
+  );
 
-    return () => clearTimeout(t);
-  }, [state.addedMessage]);
+  const inWishlist = useMemo(
+    () => (productIdStr ? isInWishlist(productIdStr) : false),
+    [productIdStr, isInWishlist]
+  );
 
-  // Invalid ID case
-  if (id === null) {
-    return (
-      <main className={styles.container} aria-live="polite">
-        <section className={styles.notFound}>
-          <h2>Invalid product</h2>
-          <p>The URL does not contain a valid product ID.</p>
+  const isOutOfStock = product?.inStock === false;
 
-          <button className={styles.backBtn} onClick={() => router.push("/products")}>
-            Back to products
-          </button>
-        </section>
-      </main>
-    );
-  }
+  /* ---------------------------------------------------------------------- */
+  /* Handlers                                                               */
+  /* ---------------------------------------------------------------------- */
 
-  // Product missing case
+  const handleQtyChange = useCallback((value: number) => {
+    setQty(Math.max(1, value));
+  }, []);
+
+  const handleAddToCart = useCallback(() => {
+    if (!product || isOutOfStock) return;
+
+    addToCart({
+      ...product,
+      id: String(product.id),
+      quantity: qty,
+    });
+
+    toast.success(`Added ${qty} × ${product.name} to cart`, {
+      icon: "🛍️",
+    });
+  }, [product, qty, isOutOfStock, addToCart]);
+
+  const toggleWishlist = useCallback(() => {
+    if (!product || !productIdStr) return;
+
+    if (inWishlist) {
+      removeFromWishlist(productIdStr);
+      toast("Removed from wishlist");
+    } else {
+      addToWishlist({
+        id: productIdStr,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        category: product.category,
+      });
+      toast.success("Saved to wishlist ❤️");
+    }
+  }, [
+    product,
+    productIdStr,
+    inWishlist,
+    addToWishlist,
+    removeFromWishlist,
+  ]);
+
+  /* ---------------------------------------------------------------------- */
+  /* Loading State                                                          */
+  /* ---------------------------------------------------------------------- */
+
   if (!product) {
     return (
-      <main className={styles.container}>
-        <section className={styles.notFound}>
-          <h2>Product not found</h2>
-          <p>Try browsing other items.</p>
-
-          <button className={styles.backBtn} onClick={() => router.push("/products")}>
-            Back to products
-          </button>
-        </section>
-      </main>
+      <div className={styles.loaderContainer} role="status" aria-live="polite">
+        <motion.div
+          className={styles.spinner}
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        />
+      </div>
     );
   }
 
-  // Add to cart
-  const onAddToCart = () => {
-    setState((s) => ({
-      ...s,
-      addedMessage: `${state.quantity} × ${product.name} added to cart.`
-    }));
-  };
-
-  // Add to wishlist
-  const onAddToWishlist = () => {
-    setState((s) => ({
-      ...s,
-      addedMessage: `${product.name} added to your wishlist.`
-    }));
-  };
-
-  // Safe quantity change
-  const changeQuantity = (qty: number) => {
-    if (Number.isNaN(qty) || qty < 1) return;
-    setState((s) => ({ ...s, quantity: qty }));
-  };
+  /* ---------------------------------------------------------------------- */
+  /* Render                                                                 */
+  /* ---------------------------------------------------------------------- */
 
   return (
     <main className={styles.container}>
-      {/* Breadcrumb */}
-      <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+      {/* Navigation */}
+      <nav className={styles.navBar} aria-label="Product navigation">
         <button
+          type="button"
           onClick={() => router.back()}
           className={styles.backBtn}
-          aria-label="Go back"
         >
-          <ArrowLeft size={18} />
-          <span className={styles.backText}>Back</span>
+          <ArrowLeft size={20} aria-hidden />
+          <span>Back</span>
         </button>
 
-        <ol className={styles.crumbList}>
-          <li>
-            <button onClick={() => router.push("/")} className={styles.link}>
-              Home
-            </button>
-          </li>
-          <li>
-            <button onClick={() => router.push("/products")} className={styles.link}>
-              Products
-            </button>
-          </li>
-          <li aria-current="page" className={styles.current}>
-            {product.name}
-          </li>
-        </ol>
+        <button
+          type="button"
+          className={styles.shareBtn}
+          onClick={() => toast.success("Link copied!")}
+          aria-label="Share product"
+        >
+          <Share2 size={18} aria-hidden />
+        </button>
       </nav>
 
-      {/* Product Content */}
-      <section className={styles.productGrid}>
-        <figure className={styles.imageCol}>
+      {/* Main Grid */}
+      <section className={styles.mainGrid}>
+        {/* Image */}
+        <motion.div
+          className={styles.visualCol}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
           <div className={styles.imageWrapper}>
             <Image
               src={product.image}
               alt={product.name}
-              width={800}
-              height={800}
-              className={styles.productImage}
-              sizes="(max-width: 768px) 100vw, 50vw"
-              priority={false}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className={styles.mainImage}
             />
           </div>
-          <figcaption className={styles.srOnly}>
-            {product.name} — product image
-          </figcaption>
-        </figure>
+        </motion.div>
 
-        <aside className={styles.detailsCol}>
-          <h1 className={styles.title}>{product.name}</h1>
+        {/* Details */}
+        <motion.div
+          className={styles.infoCol}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <header className={styles.infoHead}>
+            <span className={styles.categoryBadge}>
+              {product.category}
+            </span>
+            <h1 className={styles.productTitle}>{product.name}</h1>
+            <StarRating
+              rating={product.rating}
+              count={product.reviewCount}
+            />
+          </header>
 
-          <div className={styles.priceRow}>
-            <p className={styles.price}>{formatPrice(product.price)}</p>
-            <p className={styles.stock}>In stock</p>
+          <div className={styles.pricingBlock}>
+            <span className={styles.mainPrice}>
+              {formatPrice(product.price)}
+            </span>
+            {isOutOfStock && (
+              <span className={styles.stockBadge}>Out of Stock</span>
+            )}
           </div>
 
-          <p className={styles.description}>
-            {product.description ?? "No description available."}
-          </p>
+          <p className={styles.description}>{product.description}</p>
 
-          {/* Quantity + Buttons */}
-          <div className={styles.controls}>
-            <label htmlFor="quantity" className={styles.quantityLabel}>
-              Quantity
-            </label>
+          {/* Quantity + Actions */}
+          <div className={styles.selectionArea}>
+            <div className={styles.qtyPicker}>
+              <label htmlFor="quantity">Quantity</label>
+              <div className={styles.stepper}>
+                <button
+                  type="button"
+                  onClick={() => handleQtyChange(qty - 1)}
+                  disabled={qty <= 1}
+                  aria-label="Decrease quantity"
+                >
+                  <Minus size={16} />
+                </button>
 
-            <div className={styles.quantityRow}>
-              <button
-                aria-label="Decrease quantity"
-                onClick={() => changeQuantity(state.quantity - 1)}
-                className={styles.qtyBtn}
-              >
-                -
-              </button>
+                <span id="quantity">{qty}</span>
 
-              <input
-                id="quantity"
-                className={styles.qtyInput}
-                inputMode="numeric"
-                value={state.quantity}
-                onChange={(e) => {
-                  const n = parseInt(e.target.value, 10);
-                  changeQuantity(Number.isFinite(n) ? n : 1);
-                }}
-              />
-
-              <button
-                aria-label="Increase quantity"
-                onClick={() => changeQuantity(state.quantity + 1)}
-                className={styles.qtyBtn}
-              >
-                +
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleQtyChange(qty + 1)}
+                  aria-label="Increase quantity"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
             </div>
 
-            <div className={styles.actionRow}>
-              <button className={styles.primaryBtn} onClick={onAddToCart}>
-                <ShoppingCart size={18} aria-hidden="true" />
-                <span>Add to cart</span>
+            <div className={styles.ctaGroup}>
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={styles.addToCartBtn}
+              >
+                <ShoppingCart size={20} aria-hidden />
+                <span>
+                  {isOutOfStock ? "Sold Out" : "Add to Cart"}
+                </span>
               </button>
 
-              <button className={styles.ghostBtn} onClick={onAddToWishlist}>
-                <Heart size={18} aria-hidden="true" />
-                <span>Add to wishlist</span>
+              <button
+                type="button"
+                onClick={toggleWishlist}
+                className={`${styles.wishlistBtn} ${
+                  inWishlist ? styles.active : ""
+                }`}
+                aria-pressed={inWishlist}
+                aria-label="Toggle wishlist"
+              >
+                <Heart
+                  size={22}
+                  fill={inWishlist ? "var(--accent-red)" : "none"}
+                />
               </button>
             </div>
           </div>
 
-          {/* Meta */}
-          <div className={styles.meta}>
-            <dl>
-              <div className={styles.metaRow}>
-                <dt>Category</dt>
-                <dd>{product.category ?? "—"}</dd>
-              </div>
-
-              <div className={styles.metaRow}>
-                <dt>Tags</dt>
-                <dd>{product.tags?.join(", ") || "—"}</dd>
-              </div>
-            </dl>
+          {/* Features */}
+          <div className={styles.specs}>
+            <h3>Key Features</h3>
+            <ul>
+              {product.features?.length
+                ? product.features.map((feature, i) => (
+                    <li key={i}>{feature}</li>
+                  ))
+                : (
+                  <li>
+                    Premium quality material and craftsmanship.
+                  </li>
+                )}
+            </ul>
           </div>
-        </aside>
+        </motion.div>
       </section>
 
-      {/* Live region */}
-      <div aria-live="polite" aria-atomic="true" ref={announceRef} className={styles.srOnly} />
+      {/* Related Products */}
+      <section className={styles.relatedSection}>
+        <div className={styles.sectionHeader}>
+          <h2>Complete the Look</h2>
+          <p>Pairs perfectly with your selection</p>
+        </div>
+
+        <div className={styles.relatedGrid}>
+          <AnimatePresence>
+            {relatedProducts.slice(0, 4).map((item) => (
+              <motion.div
+                key={String(item.id)}
+                whileHover={{ y: -5 }}
+                className={styles.miniCard}
+                onClick={() =>
+                  router.push(`/products2/${item.id}`)
+                }
+                role="button"
+                tabIndex={0}
+              >
+                <div className={styles.miniMedia}>
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes="150px"
+                  />
+                </div>
+                <div className={styles.miniInfo}>
+                  <h4>{item.name}</h4>
+                  <span>{formatPrice(item.price)}</span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </section>
     </main>
   );
 }
