@@ -1,4 +1,6 @@
 // src/context/CartContext.tsx
+
+// src/context/CartContext.tsx
 "use client";
 
 import {
@@ -13,9 +15,9 @@ import {
 } from "react";
 import type { StaticImageData } from "next/image";
 
-/* ========================================================================== */
-/* Types                                                                      */
-/* ========================================================================== */
+/* =============================================================================
+   🧾 Types
+============================================================================= */
 
 export interface CartItem {
   id: string;
@@ -23,9 +25,11 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string | StaticImageData;
+
   originalPrice?: number;
   stock?: number;
   inStock?: boolean;
+
   seller?: string;
   badge?: string;
   category?: string;
@@ -39,6 +43,76 @@ interface CartState {
   initialized: boolean;
 }
 
+/* =============================================================================
+   🧠 Context Contract
+============================================================================= */
+
+export interface CartContextValue {
+  readonly items: CartItem[];
+  readonly availableItems: CartItem[];
+  readonly unavailableItems: CartItem[];
+
+  readonly subtotal: number;
+  readonly totalItems: number;
+  readonly isInitialized: boolean;
+
+  /** Preferred external API */
+  addItem: (item: CartItem) => void;
+
+  /** Internal / legacy API */
+  addToCart: (item: CartItem) => void;
+
+  removeItem: (id: CartItem["id"]) => void;
+  updateQuantity: (id: CartItem["id"], quantity: number) => void;
+  clearCart: () => void;
+}
+
+/* =============================================================================
+   🎯 Context
+============================================================================= */
+
+const CartContext = createContext<CartContextValue | null>(null);
+const STORAGE_KEY = "obat:cart:v3";
+
+/* =============================================================================
+   🔐 Utilities
+============================================================================= */
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+
+const sanitizeItem = (raw: CartItem): CartItem => {
+  const safeStock =
+    typeof raw.stock === "number" && raw.stock > 0 ? raw.stock : 999;
+
+  return {
+    ...raw,
+    price: Number.isFinite(raw.price) ? Math.max(0, raw.price) : 0,
+    quantity: clamp(Math.floor(raw.quantity || 1), 1, safeStock),
+    stock: safeStock,
+    inStock: raw.inStock ?? true,
+  };
+};
+
+const validateStoredCart = (data: unknown): CartItem[] => {
+  if (!Array.isArray(data)) return [];
+
+  return data
+    .filter(
+      (i): i is CartItem =>
+        typeof i === "object" &&
+        i !== null &&
+        typeof i.id === "string" &&
+        typeof i.name === "string" &&
+        typeof i.price === "number"
+    )
+    .map(sanitizeItem);
+};
+
+/* =============================================================================
+   🔄 Reducer
+============================================================================= */
+
 type CartAction =
   | { type: "INIT"; payload: CartItem[] }
   | { type: "ADD"; payload: CartItem }
@@ -46,160 +120,169 @@ type CartAction =
   | { type: "UPDATE_QTY"; payload: { id: string; quantity: number } }
   | { type: "CLEAR" };
 
-export interface CartContextValue {
-  items: CartItem[];
-  availableItems: CartItem[];
-  unavailableItems: CartItem[];
-  subtotal: number;
-  totalItems: number;
-  isInitialized: boolean;
-  addToCart: (item: CartItem) => void;
-  addItem: (item: CartItem) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
-  clearCart: () => void;
-}
-
-/* ========================================================================== */
-/* Context                                                                    */
-/* ========================================================================== */
-
-const CartContext = createContext<CartContextValue | undefined>(undefined);
-const STORAGE_KEY = "obat_cart_v2";
-
-/* ========================================================================== */
-/* Utilities                                                                  */
-/* ========================================================================== */
-
-const clamp = (val: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, val));
-
-const sanitizeItem = (item: CartItem): CartItem => {
-  const safeStock = typeof item.stock === "number" && item.stock > 0 ? item.stock : 999;
-  return {
-    ...item,
-    price: Math.max(0, item.price),
-    quantity: clamp(Math.floor(item.quantity || 1), 1, safeStock),
-    inStock: item.inStock ?? true,
-    stock: safeStock,
-  };
-};
-
-const validateStoredItems = (data: unknown): CartItem[] => {
-  if (!Array.isArray(data)) return [];
-  return data.filter(
-    (i): i is CartItem =>
-      typeof i === "object" &&
-      i !== null &&
-      typeof i.id === "string" &&
-      typeof i.name === "string" &&
-      typeof i.price === "number"
-  );
-};
-
-/* ========================================================================== */
-/* Reducer                                                                    */
-/* ========================================================================== */
-
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case "INIT":
-      return { items: action.payload.map(sanitizeItem), initialized: true };
+      return { items: action.payload, initialized: true };
+
     case "ADD": {
       const item = sanitizeItem(action.payload);
       const index = state.items.findIndex((i) => i.id === item.id);
+
       if (index >= 0) {
         const updated = [...state.items];
         const existing = updated[index];
+
         updated[index] = {
           ...existing,
-          quantity: clamp(existing.quantity + item.quantity, 1, existing.stock ?? 999),
+          quantity: clamp(
+            existing.quantity + item.quantity,
+            1,
+            existing.stock ?? 999
+          ),
         };
+
         return { ...state, items: updated };
       }
+
       return { ...state, items: [...state.items, item] };
     }
+
     case "REMOVE":
-      return { ...state, items: state.items.filter((i) => i.id !== action.payload) };
+      return {
+        ...state,
+        items: state.items.filter((i) => i.id !== action.payload),
+      };
+
     case "UPDATE_QTY":
       return {
         ...state,
         items: state.items.map((i) =>
           i.id === action.payload.id
-            ? { ...i, quantity: clamp(action.payload.quantity, 1, i.stock ?? 999) }
+            ? {
+                ...i,
+                quantity: clamp(
+                  action.payload.quantity,
+                  1,
+                  i.stock ?? 999
+                ),
+              }
             : i
         ),
       };
+
     case "CLEAR":
       return { ...state, items: [] };
+
     default:
       return state;
   }
 };
 
-/* ========================================================================== */
-/* Provider                                                                   */
-/* ========================================================================== */
+/* =============================================================================
+   🏪 Provider
+============================================================================= */
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], initialized: false });
-  const saveTimer = useRef<NodeJS.Timeout | null>(null);
+  const [state, dispatch] = useReducer(cartReducer, {
+    items: [],
+    initialized: false,
+  });
 
-  /* SSR-safe Load from localStorage */
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* ---------------- Hydration-safe load ---------------- */
   useEffect(() => {
-    if (typeof window === "undefined") return; // SSR-safe
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? validateStoredItems(JSON.parse(raw)) : [];
+      const parsed = raw ? validateStoredCart(JSON.parse(raw)) : [];
       dispatch({ type: "INIT", payload: parsed });
     } catch {
       dispatch({ type: "INIT", payload: [] });
     }
   }, []);
 
-  /* Persist to localStorage (debounced) */
+  /* ---------------- Debounced persistence ---------------- */
   useEffect(() => {
-    if (typeof window === "undefined") return;
     if (!state.initialized) return;
+
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
     saveTimer.current = setTimeout(() => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
-      } catch {
-        /* silent fail */
-      }
-    }, 250);
+      } catch {}
+    }, 200);
   }, [state.items, state.initialized]);
 
-  /* Cross-tab sync */
+  /* ---------------- Cross-tab sync ---------------- */
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const handler = (e: StorageEvent) => {
+    const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
       try {
-        const parsed = e.newValue ? validateStoredItems(JSON.parse(e.newValue)) : [];
+        const parsed = e.newValue
+          ? validateStoredCart(JSON.parse(e.newValue))
+          : [];
         dispatch({ type: "INIT", payload: parsed });
       } catch {}
     };
-    window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  /* Actions */
-  const addItem = useCallback((item: CartItem) => dispatch({ type: "ADD", payload: item }), []);
-  const removeItem = useCallback((id: string) => dispatch({ type: "REMOVE", payload: id }), []);
-  const updateQuantity = useCallback(
-    (id: string, quantity: number) => dispatch({ type: "UPDATE_QTY", payload: { id, quantity } }),
+  /* ---------------- Actions ---------------- */
+  const addToCart = useCallback(
+    (item: CartItem) => dispatch({ type: "ADD", payload: item }),
     []
   );
-  const clearCart = useCallback(() => dispatch({ type: "CLEAR" }), []);
 
-  /* Derived values */
-  const availableItems = useMemo(() => state.items.filter((i) => i.inStock !== false), [state.items]);
-  const unavailableItems = useMemo(() => state.items.filter((i) => i.inStock === false), [state.items]);
-  const subtotal = useMemo(() => availableItems.reduce((sum, i) => sum + i.price * i.quantity, 0), [availableItems]);
-  const totalItems = useMemo(() => state.items.reduce((sum, i) => sum + i.quantity, 0), [state.items]);
+  /** Public-friendly alias */
+  const addItem = useCallback(
+    (item: CartItem) => addToCart(item),
+    [addToCart]
+  );
+
+  const removeItem = useCallback(
+    (id: string) => dispatch({ type: "REMOVE", payload: id }),
+    []
+  );
+
+  const updateQuantity = useCallback(
+    (id: string, quantity: number) =>
+      dispatch({ type: "UPDATE_QTY", payload: { id, quantity } }),
+    []
+  );
+
+  const clearCart = useCallback(
+    () => dispatch({ type: "CLEAR" }),
+    []
+  );
+
+  /* ---------------- Derived values ---------------- */
+  const availableItems = useMemo(
+    () => state.items.filter((i) => i.inStock !== false),
+    [state.items]
+  );
+
+  const unavailableItems = useMemo(
+    () => state.items.filter((i) => i.inStock === false),
+    [state.items]
+  );
+
+  const subtotal = useMemo(
+    () =>
+      availableItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      ),
+    [availableItems]
+  );
+
+  const totalItems = useMemo(
+    () => state.items.reduce((sum, item) => sum + item.quantity, 0),
+    [state.items]
+  );
 
   const value = useMemo<CartContextValue>(
     () => ({
@@ -209,27 +292,44 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal,
       totalItems,
       isInitialized: state.initialized,
-      addToCart: addItem,
+
       addItem,
+      addToCart,
       removeItem,
       updateQuantity,
       clearCart,
     }),
-    [state.items, availableItems, unavailableItems, subtotal, totalItems, state.initialized, addItem, removeItem, updateQuantity, clearCart]
+    [
+      state.items,
+      availableItems,
+      unavailableItems,
+      subtotal,
+      totalItems,
+      state.initialized,
+      addItem,
+      addToCart,
+      removeItem,
+      updateQuantity,
+      clearCart,
+    ]
   );
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  );
 }
 
-/* ========================================================================== */
-/* Hooks                                                                      */
-/* ========================================================================== */
+/* =============================================================================
+   🪝 Hooks
+============================================================================= */
 
 export function useCart(): CartContextValue {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  if (!ctx) {
+    throw new Error("useCart must be used within <CartProvider>");
+  }
   return ctx;
 }
 
 export const useCartCount = () => useCart().totalItems;
-export const useCartTotal = () => useCart().subtotal;
+export const useCartSubtotal = () => useCart().subtotal;

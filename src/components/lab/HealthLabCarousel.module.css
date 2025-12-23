@@ -1,0 +1,394 @@
+/*src/components/lab/HealthLabCarousel.module.css*/
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Header */
+.header {
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
+}
+
+.brand {
+  font-weight: 600;
+  color: #1f2937;
+  position: relative;
+}
+
+.brand::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  opacity: 0;
+  border-radius: 2px;
+  transition: opacity 0.2s ease;
+  z-index: -1;
+}
+
+.brand:hover::before {
+  opacity: 0.1;
+}
+
+/* Carousel Wrapper */
+.carouselWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.carouselContainer {
+  overflow: visible;
+  width: 100%;
+}
+
+/* Mobile: Grid Layout (< 768px) */
+.carouselTrack {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 4px;
+}
+
+/* Navigation Buttons - Hidden on Mobile */
+.navButton {
+  display: none;
+}
+
+/* Card Styles */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.card:active {
+  transform: translateY(0);
+}
+
+.cardImageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  overflow: hidden;
+}
+
+.cardImage {
+  object-fit: cover;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .cardImage {
+  transform: scale(1.05);
+}
+
+.cardTitle {
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1f2937;
+  margin: 0;
+  text-align: left;
+  background: #ffffff;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Progress Indicator - Hidden on Mobile */
+.progressIndicator {
+  display: none;
+}
+
+/* Tablet and Desktop: Carousel Layout (≥ 768px) */
+@media (min-width: 768px) {
+  .container {
+    padding: 32px 20px;
+  }
+
+  .header {
+    margin-bottom: 28px;
+    padding: 0;
+  }
+
+  .title {
+    font-size: 26px;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  /* Carousel Wrapper with Navigation */
+  .carouselWrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .carouselContainer {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    margin: 0 4px;
+  }
+
+  /* Carousel Track - Flexbox for Desktop */
+  .carouselTrack {
+    display: flex;
+    gap: 14px;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 4px 0;
+  }
+
+  /* Cards in Carousel */
+  .card {
+    flex: 0 0 calc(20% - 11.2px);
+    min-width: 0;
+  }
+
+  /* Navigation Buttons */
+  .navButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid #e5e7eb;
+    background: #ffffff;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    position: relative;
+    outline: none;
+  }
+
+  .navButton::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+
+  .navButton:focus-visible::before {
+    border-color: #3b82f6;
+  }
+
+  .navButton:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    transform: scale(1.06);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+
+  .navButton:active:not(:disabled) {
+    transform: scale(0.98);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  .navButton:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: #fafafa;
+    border-color: #f3f4f6;
+  }
+
+  .navButton svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Progress Indicator */
+  .progressIndicator {
+    display: block;
+    margin-top: 20px;
+    padding: 0 4px;
+  }
+
+  .progressBar {
+    width: 100%;
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+    border-radius: 2px;
+    transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .cardTitle {
+    font-size: 13px;
+    padding: 12px 14px;
+  }
+}
+
+/* Large Desktop Optimizations (≥ 1024px) */
+@media (min-width: 1024px) {
+  .container {
+    padding: 40px 24px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
+
+  .carouselWrapper {
+    gap: 16px;
+  }
+
+  .carouselTrack {
+    gap: 16px;
+  }
+
+  .card {
+    flex: 0 0 calc(20% - 12.8px);
+  }
+
+  .navButton {
+    width: 48px;
+    height: 48px;
+  }
+
+  .navButton svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .cardTitle {
+    font-size: 14px;
+    padding: 14px 16px;
+  }
+}
+
+/* Extra Large Screens (≥ 1280px) */
+@media (min-width: 1280px) {
+  .container {
+    padding: 48px 32px;
+  }
+
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .container {
+    color: #f9fafb;
+  }
+
+  .title {
+    color: #f9fafb;
+  }
+
+  .subtitle {
+    color: #9ca3af;
+  }
+
+  .brand {
+    color: #e5e7eb;
+  }
+
+  .card {
+    background: #1f2937;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .card:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .cardTitle {
+    color: #f3f4f6;
+    background: #1f2937;
+  }
+
+  .navButton {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  .navButton:hover:not(:disabled) {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  .navButton:disabled {
+    background: #111827;
+    border-color: #1f2937;
+  }
+
+  .progressBar {
+    background: #374151;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .carouselTrack,
+  .card,
+  .navButton,
+  .cardImage,
+  .progressFill {
+    transition: none;
+  }
+}

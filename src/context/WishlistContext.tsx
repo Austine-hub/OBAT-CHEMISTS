@@ -1,18 +1,20 @@
 // src/context/WishlistContext.tsx
+
 "use client";
 
-import React, {
+import {
   createContext,
   useContext,
-  useState,
-  useEffect,
   useCallback,
+  useEffect,
+  useMemo,
+  useState,
   type ReactNode,
 } from "react";
 
-// ===============================================================
-// 📦 Types & Interfaces
-// ===============================================================
+/* ================================================================
+   🧾 Wishlist Item (pure data — no cart responsibility)
+================================================================ */
 
 export interface WishlistItem {
   id: string;
@@ -23,98 +25,141 @@ export interface WishlistItem {
   category?: string;
 }
 
-interface WishlistContextType {
-  wishlist: WishlistItem[];
+/* ================================================================
+   🧠 Context Contract (INTENTIONALLY NO addToCart)
+================================================================ */
+
+export interface WishlistContextType {
+  readonly wishlist: WishlistItem[];
+
   addToWishlist: (item: WishlistItem) => void;
-  removeFromWishlist: (id: string) => void;
-  isInWishlist: (id: string) => boolean;
+  removeFromWishlist: (id: WishlistItem["id"]) => void;
+
+  isInWishlist: (id: WishlistItem["id"]) => boolean;
   clearWishlist: () => void;
-  wishlistCount: number;
+
+  readonly wishlistCount: number;
 }
 
-// ===============================================================
-// 🎯 Context Creation
-// ===============================================================
+/* ================================================================
+   🎯 Context
+================================================================ */
 
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+const WishlistContext = createContext<WishlistContextType | null>(null);
 
-// ===============================================================
-// 🏪 Provider Component
-// ===============================================================
+/* ================================================================
+   🏪 Provider
+================================================================ */
 
 interface WishlistProviderProps {
   children: ReactNode;
 }
 
-export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) => {
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+const STORAGE_KEY = "obat:wishlist";
 
-  // Load wishlist from localStorage on client-side only
+export const WishlistProvider = ({ children }: WishlistProviderProps) => {
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  /* ------------------------------------------------------------
+     💾 Hydrate once (client only)
+  ------------------------------------------------------------ */
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("wishlist");
-      if (saved) setWishlist(JSON.parse(saved));
-    } catch (error) {
-      console.error("Error loading wishlist from localStorage:", error);
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed: WishlistItem[] = JSON.parse(raw);
+        if (Array.isArray(parsed)) setWishlist(parsed);
+      }
+    } catch {
+      // fail silently (corrupt storage should not crash app)
+    } finally {
+      setHydrated(true);
     }
   }, []);
 
-  // Persist wishlist to localStorage whenever it changes (client-side only)
+  /* ------------------------------------------------------------
+     💾 Persist (after hydration only)
+  ------------------------------------------------------------ */
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!hydrated) return;
     try {
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
-    } catch (error) {
-      console.error("Error saving wishlist to localStorage:", error);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlist));
+    } catch {
+      // ignore quota / private mode errors
     }
-  }, [wishlist]);
+  }, [wishlist, hydrated]);
 
-  // Add item to wishlist
+  /* ------------------------------------------------------------
+     ➕ Add
+  ------------------------------------------------------------ */
   const addToWishlist = useCallback((item: WishlistItem) => {
     setWishlist((prev) => {
-      if (prev.some((i) => i.id === item.id)) return prev; // avoid duplicates
+      if (prev.some((i) => i.id === item.id)) return prev;
       return [...prev, item];
     });
   }, []);
 
-  // Remove item from wishlist
+  /* ------------------------------------------------------------
+     ➖ Remove
+  ------------------------------------------------------------ */
   const removeFromWishlist = useCallback((id: string) => {
     setWishlist((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  // Check if item is in wishlist
+  /* ------------------------------------------------------------
+     🔍 Exists
+  ------------------------------------------------------------ */
   const isInWishlist = useCallback(
     (id: string) => wishlist.some((item) => item.id === id),
     [wishlist]
   );
 
-  // Clear wishlist
+  /* ------------------------------------------------------------
+     🧹 Clear
+  ------------------------------------------------------------ */
   const clearWishlist = useCallback(() => {
     setWishlist([]);
   }, []);
 
-  const value: WishlistContextType = {
-    wishlist,
-    addToWishlist,
-    removeFromWishlist,
-    isInWishlist,
-    clearWishlist,
-    wishlistCount: wishlist.length,
-  };
+  /* ------------------------------------------------------------
+     📦 Memoized Value (stable identity)
+  ------------------------------------------------------------ */
+  const value = useMemo<WishlistContextType>(
+    () => ({
+      wishlist,
+      addToWishlist,
+      removeFromWishlist,
+      isInWishlist,
+      clearWishlist,
+      wishlistCount: wishlist.length,
+    }),
+    [
+      wishlist,
+      addToWishlist,
+      removeFromWishlist,
+      isInWishlist,
+      clearWishlist,
+    ]
+  );
 
-  return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
+  return (
+    <WishlistContext.Provider value={value}>
+      {children}
+    </WishlistContext.Provider>
+  );
 };
 
-// ===============================================================
-// 🪝 Custom Hook
-// ===============================================================
+/* ================================================================
+   🪝 Hook (hard-fail if misused)
+================================================================ */
 
 export const useWishlist = (): WishlistContextType => {
-  const context = useContext(WishlistContext);
-  if (!context) {
-    throw new Error("useWishlist must be used within a WishlistProvider");
+  const ctx = useContext(WishlistContext);
+  if (!ctx) {
+    throw new Error("useWishlist must be used within <WishlistProvider>");
   }
-  return context;
+  return ctx;
 };
 
 export default WishlistContext;

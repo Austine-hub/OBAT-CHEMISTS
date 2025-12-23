@@ -11,6 +11,7 @@ import PopularProducts from "@/components/products/PopularProducts";
 import ProductGrid2 from "@/components/products/ProductGrid2";
 import HealthCenter from "@/components/center/HealthCare";
 import DealsOfTheDay from "@/components/DealsOfTheDay/DealsOfTheDay";
+import HealthLabCarousel from "@/components/lab/HealthLabCarousel";
 
 export const metadata: Metadata = {
   title: "OBAT CHEMISTS",
@@ -38,6 +39,12 @@ export default function Home() {
       <section aria-labelledby="hero-heading" className="w-full">
         <DealsOfTheDay/>
       </section>
+
+     {/*HealthLabCarousel*/}
+      <section aria-labelledby="hero-heading" className="w-full">
+        <HealthLabCarousel/>
+      </section>
+
 
 
      {/*ProductGrid */}

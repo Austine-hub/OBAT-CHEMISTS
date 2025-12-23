@@ -5,7 +5,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Home, ShoppingBag, ShoppingCart, MapPin, User } from "lucide-react";
 import toast from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
@@ -28,7 +28,13 @@ const BottomNav: React.FC = () => {
 
   const handleCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.success("Opening your cart...", { duration: 1500 });
+    toast.success("Opening your cart...", { 
+      duration: 1500,
+      style: {
+        background: '#333',
+        color: '#fff',
+      }
+    });
     setTimeout(() => router.push("/cart"), 300);
   };
 
@@ -41,7 +47,7 @@ const BottomNav: React.FC = () => {
     },
     {
       to: "/login",
-      label: "Login",
+      label: "Account",
       icon: User,
       ariaLabel: "Navigate to login page",
     },
@@ -73,42 +79,91 @@ const BottomNav: React.FC = () => {
     const Icon = item.icon;
 
     const iconElement = (
-      <motion.div
-        className={styles.iconWrapper}
-        whileTap={{ scale: 0.85 }}
-        whileHover={{ y: -2 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-      >
-        <span className={styles.icon}>
-          <Icon strokeWidth={1.8} size={24} />
+      <div className={styles.iconContainer}>
+        <motion.div
+          className={styles.iconWrapper}
+          whileTap={{ scale: 0.88 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 400, 
+            damping: 17 
+          }}
+        >
+          <Icon 
+            strokeWidth={isActive ? 2.2 : 1.8} 
+            size={24}
+            className={styles.icon}
+          />
           
-          {/* Cart badge with animation */}
-          {item.showCartBadge && totalItems > 0 && (
-            <motion.span
-              className={styles.cartBadge}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500, damping: 15 }}
-              key={totalItems}
+          {/* Animated cart badge with orange tinge */}
+          <AnimatePresence mode="wait">
+            {item.showCartBadge && totalItems > 0 && (
+              <motion.span
+                className={styles.cartBadge}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ 
+                  scale: 1, 
+                  opacity: 1,
+                }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 500, 
+                  damping: 15 
+                }}
+                key={`cart-${totalItems}`}
+              >
+                {totalItems > 99 ? "99+" : totalItems}
+              </motion.span>
+            )}
+          </AnimatePresence>
+          
+          {/* Static badge for offers with subtle animation */}
+          {item.badge && !item.showCartBadge && (
+            <motion.span 
+              className={styles.offerBadge}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
             >
-              {totalItems > 99 ? "99+" : totalItems}
+              {item.badge}
             </motion.span>
           )}
-          
-          {/* Static badge for offers */}
-          {item.badge && !item.showCartBadge && (
-            <span className={styles.staticBadge}>{item.badge}</span>
+        </motion.div>
+
+        {/* Active indicator dot */}
+        <AnimatePresence>
+          {isActive && (
+            <motion.div
+              className={styles.activeDot}
+              layoutId="activeDot"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 500, 
+                damping: 30 
+              }}
+            />
           )}
-        </span>
-      </motion.div>
+        </AnimatePresence>
+      </div>
     );
 
     const content = (
       <>
         {iconElement}
-        <span className={`${styles.label} ${isActive ? styles.activeLabel : ""}`}>
+        <motion.span 
+          className={`${styles.label} ${isActive ? styles.activeLabel : ""}`}
+          animate={{ 
+            scale: isActive ? 1 : 0.95,
+            fontWeight: isActive ? 600 : 400
+          }}
+          transition={{ duration: 0.2 }}
+        >
           {item.label}
-        </span>
+        </motion.span>
       </>
     );
 
@@ -165,12 +220,13 @@ const BottomNav: React.FC = () => {
       animate={{ y: 0, opacity: 1 }}
       transition={{
         type: "spring",
-        stiffness: 100,
+        stiffness: 260,
         damping: 20,
-        mass: 0.8,
       }}
     >
-      {navItems.map(renderNavItem)}
+      <div className={styles.navContent}>
+        {navItems.map(renderNavItem)}
+      </div>
     </motion.nav>
   );
 };
