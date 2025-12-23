@@ -10,7 +10,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './cart.module.css';
 
-const WHATSAPP_PHONE = '254700000000';
+const WHATSAPP_PHONE = '254796787207';
 
 export default function CartPage() {
   const {
