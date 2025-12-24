@@ -7,21 +7,21 @@ import styles from './PharmacyPromo.module.css';
 const testimonials = [
   {
     text: "Online pharmacy is a helpful hand when I don't feel like getting out or some medicines or cosmetics are out of stock in my town.",
-    name: "Linda Patison",
-    location: "New York",
-    image: "/client1.jpg"
+    name: "Linda Anyango",
+    location: "Kisumu",
+    image: "/images/banners/pic1.png"
   },
   {
     text: "Buying medicine online is a key to the safety of our country while the pandemic is spreading all around. Stay safe and buy online!",
-    name: "Jenifer Johnson",
-    location: "New Orleans",
-    image: "/client2.jpg"
+    name: "Jenifer Mule",
+    location: "Machakos",
+    image: "/images/banners/pic2.jpg"
   },
   {
     text: "As a mom, I don't have much time and the opportunity to go outside at times when my kids are sick. Online pharmacy is the best solution.",
-    name: "Sandy Cooper",
-    location: "New York",
-    image: "/client3.jpg"
+    name: "Sandy Ndambuki",
+    location: "Nairobi",
+    image: "/images/banners/pic3.png"
   }
 ];
 
@@ -43,7 +43,7 @@ export default function PharmacyPromo() {
       <div className={styles.promoCard}>
         <div className={styles.imageWrapper}>
           <Image
-            src="/promo-woman.jpg"
+            src="/images/banners/ebony2.jpg"
             alt="Healthy woman with avocado"
             fill
             className={styles.promoImage}
@@ -54,7 +54,7 @@ export default function PharmacyPromo() {
           <h2 className={styles.promoTitle}>Browse offers on sale this week.</h2>
           <p className={styles.promoSubtitle}>Vitamins & Supplements</p>
           <p className={styles.promoSubtitle}>Weekly Deals</p>
-          <a href="/shop" className={styles.promoButton}>BUY VITAMINS ONLINE</a>
+          <a href="/category/vitamins" className={styles.promoButton}>BUY VITAMINS ONLINE</a>
         </div>
       </div>
 
