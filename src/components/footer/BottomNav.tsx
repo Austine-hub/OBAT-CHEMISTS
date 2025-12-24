@@ -46,7 +46,7 @@ const BottomNav: React.FC = () => {
       ariaLabel: "Navigate to home page",
     },
     {
-      to: "/login",
+      to: "/auth/login",
       label: "Account",
       icon: User,
       ariaLabel: "Navigate to login page",

@@ -182,10 +182,10 @@ export default function ProductsGrid() {
           Popular Products
         </h2>
 
-        <Link href="/products" className={styles.viewAll}>
+        <Link href="/more/popular" className={styles.viewAll}>
           View All <ArrowRight size={18} />
         </Link>
-      </header>
+      </header>       
 
       <div className={styles.grid}>
         {products.map((product) => (

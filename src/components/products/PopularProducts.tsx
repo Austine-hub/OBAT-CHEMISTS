@@ -161,10 +161,10 @@ const PopularProducts: React.FC = () => {
   return (
     <section className={styles.container}>
       <header className={styles.header}>
-        <h2>Popular Products</h2>
+        <h2>New Arrivals at OBAT</h2>
         <button
           className={styles.viewAll}
-          onClick={() => router.push("/popular-products")}
+          onClick={() => router.push("/more/new")}
         >
           View All
         </button>

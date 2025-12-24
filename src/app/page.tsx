@@ -60,7 +60,7 @@ export default function Home() {
         <PromoBanner />
       </section>
     
-     {/* PPopularProducts*/}
+     {/* PopularProducts*/}
       <section
         aria-label="PopularProducts"
         className="w-full px-4 sm:px-6 lg:px-8 -mt-4"
