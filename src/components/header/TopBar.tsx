@@ -1,5 +1,3 @@
-//src/components/header/TopBar.tsx
-
 "use client";
 
 import { useState, useCallback, useEffect, useRef, memo } from 'react';
@@ -19,6 +17,7 @@ import {
   Menu 
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import styles from './TopBar.module.css';
 
 interface TopBarProps {
@@ -26,19 +25,17 @@ interface TopBarProps {
   isMobileMenuOpen?: boolean;
 }
 
-/**
- * Delivery Modal Component - Memoized for performance
- */
-const DeliveryModal = memo(({ 
-  isOpen, 
-  onClose 
-}: { 
-  isOpen: boolean; 
+interface DeliveryModalProps {
+  isOpen: boolean;
   onClose: () => void;
-}) => {
+}
+
+/**
+ * Delivery Modal Component
+ */
+const DeliveryModal = memo(({ isOpen, onClose }: DeliveryModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Handle escape key
   useEffect(() => {
     if (!isOpen) return;
 
@@ -55,7 +52,6 @@ const DeliveryModal = memo(({
     };
   }, [isOpen, onClose]);
 
-  // Handle click outside
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   }, [onClose]);
@@ -90,27 +86,15 @@ const DeliveryModal = memo(({
         </h2>
         
         <div className={styles.deliveryOptions} role="group" aria-label="Delivery methods">
-          <button 
-            className={styles.optionBtn} 
-            aria-label="Shipping option"
-            type="button"
-          >
+          <button className={styles.optionBtn} aria-label="Shipping option" type="button">
             <Truck size={28} aria-hidden="true" />
             <span>Shipping</span>
           </button>
-          <button 
-            className={styles.optionBtn} 
-            aria-label="Pickup option"
-            type="button"
-          >
+          <button className={styles.optionBtn} aria-label="Pickup option" type="button">
             <Package size={28} aria-hidden="true" />
             <span>Pickup</span>
           </button>
-          <button 
-            className={styles.optionBtn} 
-            aria-label="Delivery option"
-            type="button"
-          >
+          <button className={styles.optionBtn} aria-label="Delivery option" type="button">
             <Home size={28} aria-hidden="true" />
             <span>Delivery</span>
           </button>
@@ -143,31 +127,9 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Get cart data from context
   const { totalItems, subtotal } = useCart();
+  const { wishlist } = useWishlist();
 
-  // Delivery modal handlers
-  const toggleDelivery = useCallback(() => {
-    setShowDelivery(prev => !prev);
-  }, []);
-
-  const closeDelivery = useCallback(() => {
-    setShowDelivery(false);
-  }, []);
-
-  // Search handlers
-  const handleSearch = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  }, [searchQuery, router]);
-
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
-
-  // Format currency
   const formatPrice = useCallback((price: number) => {
     return new Intl.NumberFormat('en-KE', {
       style: 'currency',
@@ -177,28 +139,46 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
     }).format(price);
   }, []);
 
+  const toggleDelivery = useCallback(() => {
+    setShowDelivery(prev => !prev);
+  }, []);
+
+  const closeDelivery = useCallback(() => {
+    setShowDelivery(false);
+  }, []);
+
+  const handleSearch = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedQuery = searchQuery.trim();
+    if (trimmedQuery) {
+      router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+    }
+  }, [searchQuery, router]);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
+
   return (
     <>
       <header className={styles.topbar}>
         <div className={styles.container}>
           {/* Brand Section */}
-          <div className={styles.brandWrapper}>
-            <Link
-              href="/"
-              className={styles.brandSection}
-              aria-label="Go to OBAT Chemists homepage"
-            >
-              <Image
-                src="/logo.png"
-                alt="OBAT Chemists Logo"
-                width={60}
-                height={50}
-                className={styles.brandLogo}
-                priority
-              />
-              <span className={styles.brandName}>OBAT Chemists</span>
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className={styles.brandSection}
+            aria-label="Go to OBAT Chemists homepage"
+          >
+            <Image
+              src="/logo.png"
+              alt="OBAT Chemists Logo"
+              width={60}
+              height={50}
+              className={styles.brandLogo}
+              priority
+            />
+            <span className={styles.brandName}>OBAT Chemists</span>
+          </Link>
 
           {/* Delivery Button */}
           <button 
@@ -243,16 +223,21 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
 
           {/* Action Buttons */}
           <nav className={styles.actions} aria-label="Main navigation">
-            {/* Reorder/Wishlist */}
+            {/* Wishlist */}
             <Link 
-              href="/reorder" 
+              href="/wishlist" 
               className={styles.actionLink} 
-              aria-label="View wishlist and reorder items"
+              aria-label={`View wishlist, ${wishlist.length} items`}
             >
-              <Heart size={24} aria-hidden="true" />
+              <div className={styles.iconWrapper}>
+                <Heart size={24} aria-hidden="true" />
+                {wishlist.length > 0 && (
+                  <span className={styles.badge}>{wishlist.length}</span>
+                )}
+              </div>
               <div className={styles.actionText}>
-                <span className={styles.actionLabel}>Reorder</span>
-                <span className={styles.actionSub}>My Items</span>
+                <span className={styles.actionLabel}>Wishlist</span>
+                <span className={styles.actionSub}>Reorder Items</span>
               </div>
             </Link>
 
@@ -278,10 +263,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
               <div className={styles.cartIconWrapper}>
                 <ShoppingCart size={26} aria-hidden="true" />
                 {totalItems > 0 && (
-                  <span 
-                    className={styles.cartBadge} 
-                    aria-label={`${totalItems} ${totalItems === 1 ? 'item' : 'items'} in cart`}
-                  >
+                  <span className={styles.cartBadge}>
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
                 )}
