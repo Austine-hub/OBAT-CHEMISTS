@@ -36,9 +36,9 @@ export default function HealthLabCarousel() {
   return (
     <section className={styles.container} aria-label="Lab Tests by Health Concern">
       <header className={styles.header}>
-        <h2 className={styles.title}>Lab Tests by Health Concern</h2>
+        <h2 className={styles.title}> OBAT for all your Health Concern</h2>
         <p className={styles.subtitle}>
-          Powered by <span className={styles.brand}>Thyrocare</span>
+          Powered by <span className={styles.brand}>OBAT</span>
         </p>
       </header>
 
