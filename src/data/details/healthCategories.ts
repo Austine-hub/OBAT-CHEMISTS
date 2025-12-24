@@ -26,14 +26,14 @@ export const HEALTH_CATEGORIES: HealthCategory[] = [
   {
     id: 3,
     title: "Women Care",
-    slug: "women-care",
+    slug: "women",
     imagePath: "/images/health/women-care.jpg",
     alt: "Women healthcare",
   },
   {
     id: 4,
     title: "Hair & Skin Care",
-    slug: "hair-skin-care",
+    slug: "skin",
     imagePath: "/images/health/hair-skin.jpg",
     alt: "Hair and skin care",
   },
