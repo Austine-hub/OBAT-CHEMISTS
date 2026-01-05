@@ -20,6 +20,7 @@ import {
   Minus,
   Plus,
   Share2,
+  Check,
 } from "lucide-react";
 
 import { useCart } from "@/context/CartContext";
@@ -35,14 +36,23 @@ import {
 import styles from "./ProductGrid2.module.css";
 
 /* -------------------------------------------------------------------------- */
-/* Star Rating                                                                */
+/* Star Rating                                                                 */
 /* -------------------------------------------------------------------------- */
 
-function StarRating({ rating, count }: { rating: number; count: number }) {
+function StarRating({
+  rating,
+  count,
+}: {
+  rating: number;
+  count: number;
+}) {
   const filled = Math.round(rating);
 
   return (
-    <div className={styles.ratingRow} aria-label={`Rating ${rating} of 5`}>
+    <div
+      className={styles.ratingRow}
+      aria-label={`Rated ${rating} out of 5`}
+    >
       <div className={styles.stars}>
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
@@ -62,7 +72,7 @@ function StarRating({ rating, count }: { rating: number; count: number }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Page                                                                       */
+/* Page                                                                        */
 /* -------------------------------------------------------------------------- */
 
 export default function ProductDetailsPage() {
@@ -75,18 +85,22 @@ export default function ProductDetailsPage() {
   );
 
   const { addToCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { addToWishlist, removeFromWishlist, isInWishlist } =
+    useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [qty, setQty] = useState(1);
   const [mounted, setMounted] = useState(false);
+  const [added, setAdded] = useState(false);
 
   /* ---------------- Hydration guard ---------------- */
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   /* ---------------- Load product ---------------- */
+
   useEffect(() => {
     if (!productId) return;
     const found = getProductById(productId);
@@ -94,6 +108,7 @@ export default function ProductDetailsPage() {
   }, [productId]);
 
   /* ---------------- Derived ---------------- */
+
   const productIdStr = useMemo(
     () => (product ? String(product.id) : null),
     [product]
@@ -114,7 +129,7 @@ export default function ProductDetailsPage() {
   /* ---------------- Handlers ---------------- */
 
   const handleAddToCart = useCallback(() => {
-    if (!product || isOutOfStock) return;
+    if (!product || isOutOfStock || added) return;
 
     addToCart({
       ...product,
@@ -122,15 +137,26 @@ export default function ProductDetailsPage() {
       quantity: qty,
     });
 
-    toast.success("Added to cart 🛒");
-  }, [product, qty, isOutOfStock, addToCart]);
+    setAdded(true);
+
+    toast.success(
+      "Item successfully added to your cart.",
+      {
+        icon: "✔",
+        style: {
+          background: "#0f172a",
+          color: "#fff",
+        },
+      }
+    );
+  }, [product, qty, isOutOfStock, added, addToCart]);
 
   const toggleWishlist = useCallback(() => {
     if (!product || !productIdStr) return;
 
     if (inWishlist) {
       removeFromWishlist(productIdStr);
-      toast("Removed from wishlist");
+      toast("Removed from saved items.");
     } else {
       addToWishlist({
         id: productIdStr,
@@ -139,7 +165,8 @@ export default function ProductDetailsPage() {
         image: product.image,
         category: product.category,
       });
-      toast.success("Saved ❤️");
+
+      toast.success("Saved for later reference.");
     }
   }, [
     product,
@@ -157,7 +184,11 @@ export default function ProductDetailsPage() {
         <motion.div
           className={styles.spinner}
           animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          transition={{
+            repeat: Infinity,
+            duration: 1,
+            ease: "linear",
+          }}
         />
       </div>
     );
@@ -169,14 +200,19 @@ export default function ProductDetailsPage() {
     <main className={styles.container}>
       {/* Top bar */}
       <header className={styles.nav}>
-        <button onClick={() => router.back()} className={styles.iconBtn}>
+        <button
+          onClick={() => router.back()}
+          className={styles.iconBtn}
+        >
           <ArrowLeft size={20} />
           Back
         </button>
 
         <button
           className={styles.iconBtn}
-          onClick={() => toast.success("Link copied")}
+          onClick={() =>
+            toast.success("Product link copied.")
+          }
         >
           <Share2 size={18} />
         </button>
@@ -195,7 +231,9 @@ export default function ProductDetailsPage() {
             alt={product.name}
             fill
             priority
+            sizes="(max-width: 768px) 100vw, 50vw"
             className={styles.image}
+            style={{ objectFit: "contain" }}
           />
         </motion.div>
 
@@ -205,7 +243,9 @@ export default function ProductDetailsPage() {
           animate={{ opacity: 1, x: 0 }}
           className={styles.info}
         >
-          <span className={styles.category}>{product.category}</span>
+          <span className={styles.category}>
+            {product.category}
+          </span>
           <h1>{product.name}</h1>
 
           <StarRating
@@ -218,19 +258,31 @@ export default function ProductDetailsPage() {
               {formatPrice(product.price)}
             </span>
             {isOutOfStock && (
-              <span className={styles.stock}>Out of stock</span>
+              <span className={styles.stock}>
+                Out of stock
+              </span>
             )}
           </div>
 
-          <p className={styles.desc}>{product.description}</p>
+          <p className={styles.desc}>
+            {product.description}
+          </p>
 
           {/* Quantity */}
           <div className={styles.qtyRow}>
-            <button onClick={() => setQty(Math.max(1, qty - 1))}>
+            <button
+              onClick={() =>
+                setQty((q) => Math.max(1, q - 1))
+              }
+            >
               <Minus size={16} />
             </button>
             <span>{qty}</span>
-            <button onClick={() => setQty(qty + 1)}>
+            <button
+              onClick={() =>
+                setQty((q) => q + 1)
+              }
+            >
               <Plus size={16} />
             </button>
           </div>
@@ -239,20 +291,31 @@ export default function ProductDetailsPage() {
           <div className={styles.actions}>
             <button
               onClick={handleAddToCart}
-              disabled={isOutOfStock}
+              disabled={isOutOfStock || added}
               className={styles.cartBtn}
             >
-              <ShoppingCart size={20} />
-              Add to cart
+              {added ? (
+                <>
+                  <Check size={20} />
+                  Added
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={20} />
+                  Add to cart
+                </>
+              )}
             </button>
 
-            {/* 🔒 Hydration-safe wishlist */}
+            {/* Wishlist */}
             <button
               onClick={toggleWishlist}
               className={`${styles.wishBtn} ${
-                mounted && inWishlist ? styles.active : ""
+                mounted && inWishlist
+                  ? styles.active
+                  : ""
               }`}
-              aria-label="Wishlist"
+              aria-label="Save item"
             >
               <Heart
                 size={22}
@@ -279,17 +342,25 @@ export default function ProductDetailsPage() {
                 whileHover={{ y: -4 }}
                 className={styles.card}
                 onClick={() =>
-                  router.push(`/products2/${item.id}`)
+                  router.push(
+                    `/products2/${item.id}`
+                  )
                 }
               >
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                />
-                <div>
+                <div className={styles.cardImage}>
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes="200px"
+                    style={{ objectFit: "contain" }}
+                  />
+                </div>
+                <div className={styles.cardInfo}>
                   <h4>{item.name}</h4>
-                  <span>{formatPrice(item.price)}</span>
+                  <span>
+                    {formatPrice(item.price)}
+                  </span>
                 </div>
               </motion.article>
             ))}

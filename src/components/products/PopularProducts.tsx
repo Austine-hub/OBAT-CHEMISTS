@@ -2,10 +2,10 @@
 
 "use client";
 
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Heart, Eye, ShoppingCart } from "lucide-react";
+import { Heart, Eye, ShoppingCart, Check } from "lucide-react";
 import toast from "react-hot-toast";
 
 import styles from "./PopularProducts.module.css";
@@ -35,8 +35,27 @@ interface ProductCardProps extends Product {
 /* -------------------------------------------------------------------------- */
 
 const ProductCard: React.FC<ProductCardProps> = memo(
-  ({ id, name, price, oldPrice, image, badge, onView, onAddToCart }) => {
+  ({
+    id,
+    name,
+    price,
+    oldPrice,
+    image,
+    badge,
+    onView,
+    onAddToCart,
+  }) => {
+    const [added, setAdded] = useState(false);
+
     const stop = (e: React.MouseEvent) => e.stopPropagation();
+
+    const handleAdd = (e: React.MouseEvent) => {
+      stop(e);
+      if (added) return;
+
+      onAddToCart({ id, name, price, oldPrice, image, badge });
+      setAdded(true);
+    };
 
     return (
       <article
@@ -45,6 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
         tabIndex={0}
         onClick={() => onView(id)}
         onKeyDown={(e) => e.key === "Enter" && onView(id)}
+        aria-label={`View details for ${name}`}
       >
         {badge && <span className={styles.badge}>{badge}</span>}
 
@@ -54,6 +74,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             aria-label="Add to wishlist"
             className={styles.iconBtn}
             onClick={stop}
+            type="button"
           >
             <Heart size={16} />
           </button>
@@ -65,6 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(
               stop(e);
               onView(id);
             }}
+            type="button"
           >
             <Eye size={16} />
           </button>
@@ -79,6 +101,8 @@ const ProductCard: React.FC<ProductCardProps> = memo(
             height={240}
             loading="lazy"
             className={styles.image}
+            sizes="240px"
+            style={{ objectFit: "contain" }}
           />
         </div>
 
@@ -87,9 +111,13 @@ const ProductCard: React.FC<ProductCardProps> = memo(
           <h3 className={styles.title}>{name}</h3>
 
           <div className={styles.priceRow}>
-            <span className={styles.current}>KES {price.toFixed(2)}</span>
+            <span className={styles.current}>
+              KES {price.toFixed(2)}
+            </span>
             {oldPrice && (
-              <span className={styles.old}>KES {oldPrice.toFixed(2)}</span>
+              <span className={styles.old}>
+                KES {oldPrice.toFixed(2)}
+              </span>
             )}
           </div>
 
@@ -100,19 +128,28 @@ const ProductCard: React.FC<ProductCardProps> = memo(
                 stop(e);
                 onView(id);
               }}
+              type="button"
             >
               View
             </button>
 
             <button
               className={styles.addBtn}
-              onClick={(e) => {
-                stop(e);
-                onAddToCart({ id, name, price, oldPrice, image, badge });
-              }}
+              onClick={handleAdd}
+              disabled={added}
+              type="button"
             >
-              <ShoppingCart size={16} />
-              <span>Add</span>
+              {added ? (
+                <>
+                  <Check size={16} />
+                  <span>Added</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={16} />
+                  <span>Add</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -150,10 +187,17 @@ const PopularProducts: React.FC = () => {
         badge: product.badge,
       });
 
-      toast.success(`${product.name} added to cart`, {
-        duration: 2500,
-        icon: "🛒",
-      });
+      toast.success(
+        "Item has been added to your cart.",
+        {
+          duration: 2600,
+          style: {
+            background: "#0f172a",
+            color: "#ffffff",
+            fontSize: "0.9rem",
+          },
+        }
+      );
     },
     [addToCart]
   );
@@ -165,6 +209,7 @@ const PopularProducts: React.FC = () => {
         <button
           className={styles.viewAll}
           onClick={() => router.push("/more/new")}
+          type="button"
         >
           View All
         </button>
@@ -185,3 +230,4 @@ const PopularProducts: React.FC = () => {
 };
 
 export default PopularProducts;
+

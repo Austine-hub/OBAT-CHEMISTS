@@ -1,26 +1,29 @@
 /* src/app/wishlist/wishlist.module.css */
 
+/* Healthcare-themed professional wishlist styles */
+
 .container {
   min-height: 100vh;
-  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
-  padding: 2rem 1rem;
+  background: #fafbfc;
+  padding: 2.5rem 1.5rem;
 }
 
 .content {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-/* ========== HEADER ========== */
-
+/* Header */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
   margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid #e5e7eb;
+  padding: 1.5rem;
+  background: #ffffff;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
   flex-wrap: wrap;
 }
 
@@ -32,17 +35,21 @@
 }
 
 .header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a202c;
   margin: 0;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.01em;
 }
 
 .itemCount {
-  font-size: 1rem;
-  color: #6b7280;
+  font-size: 0.9375rem;
+  color: #4a5568;
   font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
 }
 
 .headerActions {
@@ -51,25 +58,29 @@
   flex-wrap: wrap;
 }
 
-.addAllBtn {
+.addAllBtn,
+.clearBtn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #0066cc;
-  color: white;
-  border: none;
-  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  border: 2px solid;
+  border-radius: 6px;
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+}
+
+.addAllBtn {
+  background: #ffffff;
+  color: #2563eb;
+  border-color: #2563eb;
 }
 
 .addAllBtn:hover {
-  background: #0052a3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  background: #2563eb;
+  color: #ffffff;
 }
 
 .addAllBtn svg {
@@ -78,15 +89,9 @@
 }
 
 .clearBtn {
-  padding: 0.75rem 1.5rem;
-  background: white;
+  background: #ffffff;
   color: #dc2626;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-color: #fca5a5;
 }
 
 .clearBtn:hover {
@@ -94,110 +99,102 @@
   border-color: #dc2626;
 }
 
-/* ========== SUMMARY ========== */
-
+/* Summary */
 .summary {
-  margin-bottom: 2.5rem;
-}
-
-.summaryCard {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 102, 204, 0.1);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  background: #ffffff;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
 }
 
 .summaryLabel {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9375rem;
+  color: #4a5568;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .summaryValue {
-  font-size: 1.75rem;
-  color: white;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-size: 1.5rem;
+  color: #1a202c;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-/* ========== GRID ========== */
-
+/* Grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
 }
 
 .card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   display: flex;
   flex-direction: column;
 }
 
 .card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border-color: #d1d5db;
-  transform: translateY(-2px);
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .imageWrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  background: #f9fafb;
+  background: #f7fafc;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  border-bottom: 2px solid #e1e8ed;
 }
 
 .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
 }
 
-.card:hover .image {
-  transform: scale(1.05);
-}
-
-.removeIcon {
+.removeBtn {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  width: 36px;
-  height: 36px;
-  background: white;
-  border: none;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  transition: all 0.2s;
 }
 
-.removeIcon:hover {
-  background: #fee2e2;
-  transform: scale(1.1);
+.removeBtn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
 }
 
-.removeIcon svg {
-  width: 18px;
-  height: 18px;
+.removeBtn svg {
+  width: 16px;
+  height: 16px;
+  color: #718096;
+}
+
+.removeBtn:hover svg {
   color: #dc2626;
 }
 
@@ -219,7 +216,7 @@
 .itemName {
   font-size: 1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #1a202c;
   line-height: 1.4;
   margin: 0;
   display: -webkit-box;
@@ -230,7 +227,7 @@
 
 .brand {
   font-size: 0.8125rem;
-  color: #0066cc;
+  color: #2563eb;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -238,7 +235,7 @@
 
 .category {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: #718096;
   font-weight: 500;
 }
 
@@ -248,36 +245,41 @@
   justify-content: space-between;
   gap: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid #e2e8f0;
 }
 
 .price {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1f2937;
-  letter-spacing: -0.025em;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a202c;
+  letter-spacing: -0.01em;
 }
 
-.addBtn {
+.addBtn,
+.inCartBtn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  background: #0066cc;
-  color: white;
-  border: none;
-  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  border: 2px solid;
+  border-radius: 6px;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
   white-space: nowrap;
+  text-decoration: none;
+}
+
+.addBtn {
+  background: #ffffff;
+  color: #2563eb;
+  border-color: #2563eb;
 }
 
 .addBtn:hover {
-  background: #0052a3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  background: #2563eb;
+  color: #ffffff;
 }
 
 .addBtn svg {
@@ -286,24 +288,14 @@
 }
 
 .inCartBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
   background: #f0fdf4;
   color: #16a34a;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  border-color: #86efac;
 }
 
 .inCartBtn:hover {
   background: #dcfce7;
-  border-color: #86efac;
+  border-color: #22c55e;
 }
 
 .inCartBtn svg {
@@ -311,40 +303,32 @@
   height: 16px;
 }
 
-/* ========== ACTIONS ========== */
-
+/* Actions */
 .actions {
   display: flex;
   justify-content: center;
-  padding-top: 2rem;
-  border-top: 1px solid #e5e7eb;
+  padding: 2rem 0;
 }
 
 .continueBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 2rem;
-  background: white;
-  color: #0066cc;
-  border: 2px solid #0066cc;
-  border-radius: 8px;
+  padding: 0.75rem 2rem;
+  background: #ffffff;
+  color: #2563eb;
+  border: 2px solid #2563eb;
+  border-radius: 6px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
 .continueBtn:hover {
-  background: #0066cc;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  background: #2563eb;
+  color: #ffffff;
 }
 
-/* ========== EMPTY STATE ========== */
-
+/* Empty State */
 .empty {
   display: flex;
   flex-direction: column;
@@ -353,64 +337,62 @@
   min-height: 60vh;
   text-align: center;
   padding: 3rem 1.5rem;
+  background: #ffffff;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
 }
 
 .emptyIcon {
-  width: 120px;
-  height: 120px;
-  color: #d1d5db;
-  margin-bottom: 2rem;
-  stroke-width: 1.5;
+  width: 100px;
+  height: 100px;
+  color: #cbd5e0;
+  margin-bottom: 1.5rem;
 }
 
 .empty h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a202c;
   margin: 0 0 1rem 0;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.01em;
 }
 
 .empty p {
-  font-size: 1.125rem;
-  color: #6b7280;
+  font-size: 1rem;
+  color: #4a5568;
   margin: 0 0 2rem 0;
-  max-width: 500px;
+  max-width: 480px;
   line-height: 1.6;
 }
 
 .browseBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2.5rem;
-  background: #0066cc;
-  color: white;
-  border: none;
-  border-radius: 8px;
+  padding: 0.875rem 2rem;
+  background: #2563eb;
+  color: #ffffff;
+  border: 2px solid #2563eb;
+  border-radius: 6px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
 .browseBtn:hover {
-  background: #0052a3;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 102, 204, 0.3);
+  background: #1d4ed8;
+  border-color: #1d4ed8;
 }
 
-/* ========== RESPONSIVE ========== */
-
+/* Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: 1.5rem 1rem;
   }
 
   .header {
     flex-direction: column;
     align-items: stretch;
+    padding: 1.25rem;
   }
 
   .headerLeft {
@@ -431,30 +413,26 @@
     justify-content: center;
   }
 
-  .summaryCard {
-    padding: 1.25rem 1.5rem;
+  .summary {
+    padding: 1rem 1.25rem;
   }
 
   .summaryValue {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
   .empty h1 {
     font-size: 1.5rem;
   }
 
-  .empty p {
-    font-size: 1rem;
-  }
-
   .emptyIcon {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
   }
 }
 

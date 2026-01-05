@@ -283,6 +283,69 @@
   margin-top: auto;
 }
 
+/* =====================================================
+   Cart Button – Default
+===================================================== */
+.cartBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 10px 14px;
+  border-radius: 8px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  background-color: #0d6efd; /* Primary medical blue */
+  color: #ffffff;
+
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Hover (before add) */
+.cartBtn:not(:disabled):hover {
+  background-color: #0b5ed7;
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.25);
+}
+
+/* =====================================================
+   Cart Button – AFTER ADD (DISABLED)
+   Hospital / Pharmacy Standard
+===================================================== */
+.cartBtn:disabled {
+  background-color: #e9f7ef; /* Soft medical green */
+  color: #0f5132;           /* Approved success green */
+  border: 1px solid #badbcc;
+
+  cursor: not-allowed;
+  box-shadow: none;
+
+  opacity: 1; /* override browser default */
+}
+
+/* Icon inside disabled button */
+.cartBtn:disabled svg {
+  color: #0f5132;
+}
+
+/* Prevent hover effects when disabled */
+.cartBtn:disabled:hover {
+  background-color: #e9f7ef;
+  box-shadow: none;
+  transform: none;
+}
+
+
 .cartBtn {
   flex: 1;
   display: inline-flex;
@@ -447,4 +510,11 @@
   .viewBtn {
     width: 100%;
   }
+}
+
+/* =====================================================
+   Toast – Global Container
+===================================================== */
+:global(.toast-success) {
+  border-left: 4px solid #198754; /* Medical green */
 }

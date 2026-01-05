@@ -1,11 +1,10 @@
-//src/components/products/ProductsGrid.tsx
-
+// src/components/products/ProductsGrid.tsx
 "use client";
 
 import { memo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingCart, Eye, ArrowRight } from "lucide-react";
+import { Heart, ShoppingCart, Eye, ArrowRight, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -27,30 +26,29 @@ import styles from "./ProductGrid.module.css";
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
+  isAdded: boolean;
 }
 
 const ProductCard = memo(function ProductCard({
   product,
   onAddToCart,
+  isAdded,
 }: ProductCardProps) {
-  // HARD GUARD — prevents runtime crashes forever
-  if (!product || typeof product.price !== "number") {
-    return null;
-  }
+  if (!product || typeof product.price !== "number") return null;
 
   const discount = getDiscountPercent(product);
   const inStock = isInStock(product);
+  const disabled = !inStock || isAdded;
 
   const handleAdd = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (!inStock) {
-        toast.error("Out of stock");
-        return;
-      }
+
+      if (disabled) return;
+
       onAddToCart(product);
     },
-    [onAddToCart, product, inStock]
+    [onAddToCart, product, disabled]
   );
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
@@ -60,7 +58,7 @@ const ProductCard = memo(function ProductCard({
       className={styles.card}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
-      aria-disabled={!inStock}
+      aria-disabled={disabled}
     >
       {discount > 0 && (
         <span className={styles.badge}>{discount}% OFF</span>
@@ -68,18 +66,13 @@ const ProductCard = memo(function ProductCard({
 
       {/* Quick actions */}
       <div className={styles.actions}>
-        <button
-          className={styles.iconBtn}
-          onClick={stop}
-          aria-label="Add to wishlist"
-        >
+        <button className={styles.iconBtn} onClick={stop}>
           <Heart size={16} />
         </button>
 
         <Link
           href={`/products/${product.id}`}
           className={styles.iconBtn}
-          aria-label="View product"
           onClick={stop}
         >
           <Eye size={16} />
@@ -88,10 +81,9 @@ const ProductCard = memo(function ProductCard({
         <button
           className={styles.iconBtn}
           onClick={handleAdd}
-          aria-label="Quick add to cart"
-          disabled={!inStock}
+          disabled={disabled}
         >
-          <ShoppingCart size={16} />
+          {isAdded ? <Check size={16} /> : <ShoppingCart size={16} />}
         </button>
       </div>
 
@@ -120,7 +112,6 @@ const ProductCard = memo(function ProductCard({
               {formatCurrency(product.oldPrice, product.currency)}
             </span>
           )}
-
           <span className={styles.price}>
             {formatCurrency(product.price, product.currency)}
           </span>
@@ -136,11 +127,13 @@ const ProductCard = memo(function ProductCard({
           </Link>
 
           <button
-            className={styles.addToCart}
+            className={`${styles.addToCart} ${
+              isAdded ? styles.added : ""
+            }`}
             onClick={handleAdd}
-            disabled={!inStock}
+            disabled={disabled}
           >
-            {inStock ? "Add to cart" : "Out of stock"}
+            {isAdded ? "Added" : inStock ? "Add to cart" : "Out of stock"}
           </button>
         </div>
       </div>
@@ -153,7 +146,7 @@ const ProductCard = memo(function ProductCard({
 /* -------------------------------------------------------------------------- */
 
 export default function ProductsGrid() {
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
 
   const handleAddToCart = useCallback(
     (product: Product) => {
@@ -168,24 +161,31 @@ export default function ProductsGrid() {
         inStock: product.stock > 0,
       });
 
-      toast.success(`${product.name} added to cart`, {
-        icon: "🛒",
-      });
+      toast.custom((t) => (
+        <div
+          className={`${styles.toast} ${
+            t.visible ? styles.toastEnter : styles.toastExit
+          }`}
+        >
+          <Check size={18} />
+          <span>
+            <strong>{product.name}</strong> added to cart
+          </span>
+        </div>
+      ));
     },
     [addToCart]
   );
 
   return (
-    <section className={styles.section} aria-labelledby="products-title">
+    <section className={styles.section}>
       <header className={styles.header}>
-        <h2 id="products-title" className={styles.title}>
-          Popular Products
-        </h2>
+        <h2 className={styles.title}>Popular Products</h2>
 
         <Link href="/more/popular" className={styles.viewAll}>
           View All <ArrowRight size={18} />
         </Link>
-      </header>       
+      </header>
 
       <div className={styles.grid}>
         {products.map((product) => (
@@ -193,6 +193,9 @@ export default function ProductsGrid() {
             key={product.id}
             product={product}
             onAddToCart={handleAddToCart}
+            isAdded={items.some(
+              (item) => item.id === String(product.id)
+            )}
           />
         ))}
       </div>

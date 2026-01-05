@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { useState, useCallback, useEffect, useRef, memo } from 'react';
@@ -284,6 +286,7 @@ const TopBar = ({ onMobileToggle, isMobileMenuOpen = false }: TopBarProps) => {
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
+
         </div>
       </header>
 
