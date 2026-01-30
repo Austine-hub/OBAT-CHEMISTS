@@ -1,22 +1,19 @@
 //src/app/orders/page.tsx
+
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getOrders, clearOrders } from '@/utils/orderStorage';
-import { Order, OrderFilter, OrderStatus } from '@/types/order';
+import type { Order, OrderFilter, OrderStatus } from '@/types/order';
 import styles from './Orders.module.css';
 
 /* ==========================================
-   Constants
+   Constants & Helpers
 ========================================== */
 
 const FILTER_OPTIONS: readonly OrderFilter[] = ['all', 'pending', 'completed', 'cancelled'];
-
-/* ==========================================
-   Helper Functions
-========================================== */
 
 const formatCurrency = (value: number): string => `KSh ${value.toLocaleString()}`;
 
@@ -99,11 +96,22 @@ export default function OrdersPage() {
     };
 
     orders.forEach((order) => {
-      stats.totalSpent += order.pricing.total;
+      // Safe access with proper fallback
+      const total = order.pricing?.total ?? 0;
+      stats.totalSpent += total;
 
-      if (order.status === 'pending') stats.pending++;
-      else if (order.status === 'completed' || order.status === 'delivered') stats.completed++;
-      else if (order.status === 'cancelled') stats.cancelled++;
+      switch (order.status) {
+        case 'pending':
+          stats.pending++;
+          break;
+        case 'completed':
+        case 'delivered':
+          stats.completed++;
+          break;
+        case 'cancelled':
+          stats.cancelled++;
+          break;
+      }
     });
 
     return stats;
