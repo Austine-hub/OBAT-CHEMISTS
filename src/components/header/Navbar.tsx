@@ -62,6 +62,7 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   { label: "Offers", key: "offers", path: "/offers" },
+  { label: "Orders History", key: "orders", path: "/orders" },
   { label: "Dashboard", key: "dashboard", path: "/dashboard" },
  ];
 

@@ -1,6 +1,4 @@
 // src/context/CartContext.tsx
-
-// src/context/CartContext.tsx
 "use client";
 
 import {
@@ -15,57 +13,19 @@ import {
 } from "react";
 import type { StaticImageData } from "next/image";
 
+import type {
+  CartItem,
+  CartState,
+  CartContextValue,
+} from "@/types/cart";
+
+
 /* =============================================================================
    🧾 Types
 ============================================================================= */
 
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string | StaticImageData;
 
-  originalPrice?: number;
-  stock?: number;
-  inStock?: boolean;
 
-  seller?: string;
-  badge?: string;
-  category?: string;
-  description?: string;
-  variation?: string;
-  discount?: number;
-}
-
-interface CartState {
-  items: CartItem[];
-  initialized: boolean;
-}
-
-/* =============================================================================
-   🧠 Context Contract
-============================================================================= */
-
-export interface CartContextValue {
-  readonly items: CartItem[];
-  readonly availableItems: CartItem[];
-  readonly unavailableItems: CartItem[];
-
-  readonly subtotal: number;
-  readonly totalItems: number;
-  readonly isInitialized: boolean;
-
-  /** Preferred external API */
-  addItem: (item: CartItem) => void;
-
-  /** Internal / legacy API */
-  addToCart: (item: CartItem) => void;
-
-  removeItem: (id: CartItem["id"]) => void;
-  updateQuantity: (id: CartItem["id"], quantity: number) => void;
-  clearCart: () => void;
-}
 
 /* =============================================================================
    🎯 Context

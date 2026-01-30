@@ -1,0 +1,763 @@
+/* Orders.module.css */
+
+/* ============================================================================
+   🎨 Container & Layout
+============================================================================ */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e8f4f8 100%);
+  padding: 2rem 1rem;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ============================================================================
+   🧭 Header
+============================================================================ */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.titleGroup h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.orderCount {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 1rem;
+}
+
+.clearBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  color: #dc2626;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: 2px solid #dc2626;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearBtn svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  stroke-width: 2.5;
+}
+
+.clearBtn:hover {
+  background: #dc2626;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.clearBtn:active {
+  transform: translateY(0);
+}
+
+/* ============================================================================
+   📊 Statistics Grid
+============================================================================ */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  border-color: #0ea5e9;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+.statIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.statInfo {
+  flex: 1;
+}
+
+.statLabel {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.statValue {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+/* ============================================================================
+   🔍 Filter Tabs
+============================================================================ */
+
+.filterTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+}
+
+.filterTab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filterTab:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.filterTabActive {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+}
+
+.filterTabActive:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+}
+
+.filterCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.375rem;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+}
+
+.filterTabActive .filterCount {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================================
+   📋 Orders List
+============================================================================ */
+
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.orderCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.orderCard:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.orderHeader:hover {
+  background: #f8fafc;
+}
+
+.orderHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.orderIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+.orderIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke: #0284c7;
+  stroke-width: 2;
+}
+
+.orderInfo h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.orderDate {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.orderHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.orderTotal {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.expandIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: #64748b;
+  stroke-width: 2.5;
+  transition: transform 0.2s ease;
+}
+
+.expandIconRotated {
+  transform: rotate(180deg);
+}
+
+/* ============================================================================
+   🏷️ Status Badges
+============================================================================ */
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  white-space: nowrap;
+}
+
+.statusPending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusCompleted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.statusCancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ============================================================================
+   📦 Order Details
+============================================================================ */
+
+.orderDetails {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  border-top: 1px solid #f1f5f9;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.orderSummary {
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.9375rem;
+}
+
+.summaryRow span:first-child {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.summaryRow span:last-child {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 2px solid #e2e8f0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.itemsList h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.orderItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.orderItem:last-child {
+  margin-bottom: 0;
+}
+
+.itemImage {
+  position: relative;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: white;
+  flex-shrink: 0;
+}
+
+.itemImage img {
+  object-fit: cover;
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemInfo h5 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemQuantity {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.itemPrice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.itemPrice > span:first-child {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.itemPriceUnit {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* ============================================================================
+   🔄 Loading & Empty States
+============================================================================ */
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1.5rem;
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid #e2e8f0;
+  border-top-color: #0ea5e9;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loader p {
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.emptyIcon {
+  width: 6rem;
+  height: 6rem;
+  stroke: #cbd5e1;
+  stroke-width: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.empty h2 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.empty p {
+  margin: 0 0 2rem 0;
+  font-size: 1rem;
+  color: #64748b;
+  max-width: 28rem;
+}
+
+.noResults {
+  padding: 3rem;
+  text-align: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+}
+
+.noResults p {
+  margin: 0;
+  font-size: 1rem;
+  color: #64748b;
+}
+
+/* ============================================================================
+   🔘 Buttons
+============================================================================ */
+
+.shopBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+}
+
+.shopBtn:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+}
+
+.shopBtn:active {
+  transform: translateY(0);
+}
+
+.continueBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 2rem;
+  background: white;
+  color: #0284c7;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid #0284c7;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.continueBtn:hover {
+  background: #f0f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+}
+
+.continueBtn:active {
+  transform: translateY(0);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+/* ============================================================================
+   📱 Responsive Design
+============================================================================ */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 0.75rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .titleGroup h1 {
+    font-size: 1.5rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .filterTabs {
+    padding: 0.375rem;
+  }
+
+  .filterTab {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .orderHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .orderHeaderLeft {
+    width: 100%;
+  }
+
+  .orderHeaderRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .orderTotal {
+    font-size: 1rem;
+  }
+
+  .orderDetails {
+    padding: 0 1.25rem 1.25rem 1.25rem;
+  }
+
+  .orderItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .itemImage {
+    width: 100%;
+    height: 10rem;
+  }
+
+  .itemPrice {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .clearBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .shopBtn,
+  .continueBtn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleGroup h1 {
+    font-size: 1.25rem;
+  }
+
+  .statCard {
+    padding: 1.25rem;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .orderInfo h3 {
+    font-size: 1rem;
+  }
+
+  .orderDate {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ============================================================================
+   ♿ Accessibility
+============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .orderDetails,
+  .expandIcon {
+    animation: none;
+    transition: none;
+  }
+}
+
+.clearBtn:focus-visible,
+.filterTab:focus-visible,
+.orderHeader:focus-visible,
+.shopBtn:focus-visible,
+.continueBtn:focus-visible {
+  outline: 3px solid #0ea5e9;
+  outline-offset: 2px;
+}
+.clearBtn {
+  background: crimson;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.clearBtn:hover {
+  background: darkred;
+}
