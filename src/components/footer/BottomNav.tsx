@@ -66,12 +66,13 @@ const BottomNav: React.FC = () => {
       showCartBadge: true,
     },
     {
-      to: "https://www.google.com/maps/dir/-1.1010048,37.011456/HEALTHFIELD+PHARMACY,+Jkuat,+Muramati+road,+Gate+C+Rd,+Juja",
+      to: "https://www.google.com/maps/dir/?api=1&origin=Current+Location&destination=-1.0922983,37.0205231",
       label: "Stores",
       icon: MapPin,
       external: true,
-      ariaLabel: "Get directions to store",
+      ariaLabel: "Get directions to OBAT Medical Enterprises",
     },
+
   ];
 
   const renderNavItem = (item: NavItem) => {
